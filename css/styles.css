@@ -12,12 +12,20 @@ body {
     background-color: #f9fafb;
 }
 
-.container {
+.container,
+#main-content {
     max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: clamp(1rem, 5vw, 2rem);
+    padding-right: clamp(1rem, 5vw, 2rem);
 }
 
+.event-card,
+.item-card {
+    margin-left: 0.25rem;
+    margin-right: 0.25rem;
+}
 /* Typography */
 h1, h2, h3, h4 {
     margin-bottom: 0.5rem;
