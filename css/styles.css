@@ -602,3 +602,36 @@ input:focus, select:focus, textarea:focus {
         gap: 1rem;
     }
 }
+/* Mobile Fixes for Margin and Padding */
+@media (max-width: 768px) {
+    /* Ensure consistent padding on mobile */
+    .container,
+    #main-content {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    /* Ensure event and item cards don’t touch the screen edge */
+    .event-card,
+    .item-card {
+        margin-left: 0.25rem;
+        margin-right: 0.25rem;
+    }
+
+    /* Single column event list */
+    .event-list {
+        grid-template-columns: 1fr;
+    }
+
+    /* Stack form rows */
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .events-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
