@@ -141,6 +141,9 @@ function navigateToEventDetail(eventId) {
     currentView = 'eventDetail';
     currentEventId = eventId;
     
+    // Store the current event ID in a global variable that other scripts can access
+    window.currentEventId = eventId;
+    
     // Get the event data
     const eventRef = database.ref(`events/${eventId}`);
     eventRef.on('value', (snapshot) => {

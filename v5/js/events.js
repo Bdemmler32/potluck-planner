@@ -1,3 +1,29 @@
+// Add this at the beginning of the file to fix the renderItemsList reference issue
+if (typeof renderItemsList !== 'function') {
+    // This is a minimal implementation that will prevent errors
+    // It will be overridden by the real implementation from items.js if loaded later
+    function renderItemsList(items = {}, filterCategory = 'All') {
+        const itemsContainer = document.getElementById('items-container');
+        if (!itemsContainer) return;
+        
+        itemsContainer.innerHTML = '';
+        
+        if (Object.keys(items).length === 0) {
+            // No items message
+            const noItems = document.createElement('div');
+            noItems.className = 'no-items';
+            noItems.textContent = 'No items in this category yet. Add the first one!';
+            itemsContainer.appendChild(noItems);
+            return;
+        }
+        
+        // Try to dispatch an event that items.js might be listening for
+        document.dispatchEvent(new CustomEvent('renderItemsNeeded', { 
+            detail: { items, filterCategory }
+        }));
+    }
+}
+
 // Event Management Functions
 
 // Check if an event is past

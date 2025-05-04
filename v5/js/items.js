@@ -56,6 +56,148 @@ function isEventPast(dateStr) {
     return date < tomorrow;
 }
 
+// Create an item card element - MODIFIED to reorganize content and add notes/recipes
+function createItemCard(item) {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.setAttribute('data-id', item.id);
+    
+    // Get the guest count (default to 1 for backward compatibility)
+    const guestCount = item.guestCount || 1;
+    
+    // Create HTML for dishes (if multiple)
+    let dishesHtml = '';
+    if (Array.isArray(item.dishes) && item.dishes.length > 0) {
+        // Multiple dishes
+        item.dishes.forEach(dish => {
+            if (dish.name && dish.category) {
+                dishesHtml += `
+                    <span class="category-badge">${dish.category}</span>
+                `;
+            }
+        });
+    } else if (item.name && item.category) {
+        // Single dish (old format)
+        dishesHtml = `<span class="category-badge">${item.category}</span>`;
+    }
+    
+    // Format the dish names with proper grammar
+    let dishNameDisplay = '';
+    if (Array.isArray(item.dishes) && item.dishes.length > 0) {
+        // Get all valid dish names
+        const dishNames = item.dishes
+            .filter(d => d.name && d.name.trim() !== '')
+            .map(d => d.name);
+        
+        // Format according to grammar rules
+        if (dishNames.length === 0) {
+            dishNameDisplay = 'No dish specified';
+        } else if (dishNames.length === 1) {
+            dishNameDisplay = dishNames[0];
+        } else if (dishNames.length === 2) {
+            dishNameDisplay = `${dishNames[0]} and ${dishNames[1]}`;
+        } else {
+            const lastDish = dishNames.pop();
+            dishNameDisplay = `${dishNames.join(', ')}, and ${lastDish}`;
+        }
+    } else {
+        // Old format or no dish specified
+        dishNameDisplay = item.name || 'No dish specified';
+    }
+    
+    // Check if event is past
+    const eventDate = document.querySelector('.event-details-panel .event-detail-row:nth-child(3)');
+    let isPastEvent = false;
+    if (eventDate) {
+        const dateText = eventDate.textContent.split(':')[1];
+        isPastEvent = isEventPast(dateText);
+    }
+    
+    // Check if notes or recipes exist
+    const hasNotesOrRecipes = item.notes || item.recipes;
+    
+    // Create HTML structure for the card
+    card.innerHTML = `
+        <div class="item-info">
+            <h3>${dishNameDisplay}</h3>
+            <div class="person-info">
+                <span>${item.person}</span>
+                <span class="guest-count-badge"><i class="fas fa-users"></i> ${guestCount} guest${guestCount !== 1 ? 's' : ''}</span>
+                ${dishesHtml}
+            </div>
+        </div>
+        <div class="item-actions">
+            ${hasNotesOrRecipes ? `
+                <button class="item-action-btn notes-btn" title="View Notes & Recipes">
+                    <i class="fas fa-sticky-note" style="color: #4f46e5;"></i>
+                </button>
+                <span class="action-separator">|</span>
+            ` : ''}
+            ${!isPastEvent ? `
+                <button class="item-action-btn edit-btn" title="Edit Item">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+                <button class="item-action-btn delete-btn" title="Remove Item">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            ` : ''}
+        </div>
+        ${hasNotesOrRecipes ? `
+            <div class="notes-content" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f3f4f6;">
+                ${item.notes ? `
+                    <div class="notes-section">
+                        <h4>Notes:</h4>
+                        <p>${item.notes ? item.notes.split('\n').join('<br>') : ''}</p>
+                    </div>
+                ` : ''}
+                ${item.recipes ? `
+                    <div class="recipes-section">
+                        <h4>Recipes:</h4>
+                        <p>${item.recipes ? item.recipes.split('\n').join('<br>') : ''}</p>
+                    </div>
+                ` : ''}
+            </div>
+        ` : ''}
+    `;
+    
+    // Add event listeners
+    if (hasNotesOrRecipes) {
+        const notesBtn = card.querySelector('.notes-btn');
+        const notesContent = card.querySelector('.notes-content');
+        
+        notesBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notesContent.style.display = notesContent.style.display === 'none' ? 'block' : 'none';
+        });
+    }
+    
+    // Add edit and delete event listeners if not a past event
+    if (!isPastEvent) {
+        const editBtn = card.querySelector('.edit-btn');
+        const deleteBtn = card.querySelector('.delete-btn');
+        
+        if (editBtn) {
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.dispatchEvent(new CustomEvent('showEditItemModal', { 
+                    detail: { item: item }
+                }));
+            });
+        }
+        
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.dispatchEvent(new CustomEvent('showDeleteConfirmation', { 
+                    detail: { itemId: item.id }
+                }));
+            });
+        }
+    }
+    
+    return card;
+}
+
 // Add a dish template to the modal
 function addDishTemplate(dishName = '', category = 'Main Dish', index = 0) {
     const dishesContainer = document.getElementById('dishes-container');
@@ -356,6 +498,39 @@ function showDeleteConfirmation(itemId) {
             // Show the modal
             modal.style.display = 'block';
         });
+    } else {
+        // If event title can't be found in the header, try to get it from the details panel
+        const detailsPanel = document.querySelector('.event-details-panel');
+        if (detailsPanel) {
+            const detailTitle = detailsPanel.querySelector('.event-detail-title');
+            if (detailTitle) {
+                const eventTitle = detailTitle.textContent;
+                // Find the event in Firebase that matches this title
+                const eventsRef = database.ref('events');
+                eventsRef.once('value', (snapshot) => {
+                    const events = snapshot.val();
+                    for (const eventId in events) {
+                        if (events[eventId].name === eventTitle) {
+                            document.getElementById('delete-event-id').value = eventId;
+                            break;
+                        }
+                    }
+                    
+                    // Show the modal
+                    modal.style.display = 'block';
+                });
+                return;
+            }
+        }
+        
+        // If we still can't find the event ID, use the current event ID from the application state
+        if (window.currentEventId) {
+            document.getElementById('delete-event-id').value = window.currentEventId;
+            modal.style.display = 'block';
+        } else {
+            console.error('Could not determine event ID for deletion');
+            alert('Error: Could not determine which event this item belongs to.');
+        }
     }
 }
 
@@ -427,156 +602,11 @@ document.addEventListener('showDeleteConfirmation', function(e) {
 document.addEventListener('hideItemModal', hideItemModal);
 document.addEventListener('hideConfirmModal', hideConfirmModal);
 document.addEventListener('confirmDelete', confirmDeleteItem);
-document.addEventListener('submitItemForm', handleItemFormSubmit);item-notes').value = item.notes;
-        notesContainer.style.display = 'block';
-        document.getElementById('add-notes-btn').style.display = 'none';
-    } else {
-        notesContainer.style.display = 'none';
-        document.getElementById('add-notes-btn').style.display = 'block';
-    }
-    
-    // Set up recipes
-    if (item.recipes) {
-        document.getElementById('
+document.addEventListener('submitItemForm', handleItemFormSubmit);
 
-// Create an item card element - MODIFIED to reorganize content and add notes/recipes
-function createItemCard(item) {
-    const card = document.createElement('div');
-    card.className = 'item-card';
-    card.setAttribute('data-id', item.id);
-    
-    // Get the guest count (default to 1 for backward compatibility)
-    const guestCount = item.guestCount || 1;
-    
-    // Create HTML for dishes (if multiple)
-    let dishesHtml = '';
-    if (Array.isArray(item.dishes) && item.dishes.length > 0) {
-        // Multiple dishes
-        item.dishes.forEach(dish => {
-            if (dish.name && dish.category) {
-                dishesHtml += `
-                    <span class="category-badge">${dish.category}</span>
-                `;
-            }
-        });
-    } else if (item.name && item.category) {
-        // Single dish (old format)
-        dishesHtml = `<span class="category-badge">${item.category}</span>`;
+// Add a listener for renderItemsNeeded event (in case events.js tries to call renderItemsList before it's available)
+document.addEventListener('renderItemsNeeded', function(e) {
+    if (typeof renderItemsList === 'function') {
+        renderItemsList(e.detail.items, e.detail.filterCategory);
     }
-    
-    // Format the dish names with proper grammar
-    let dishNameDisplay = '';
-    if (Array.isArray(item.dishes) && item.dishes.length > 0) {
-        // Get all valid dish names
-        const dishNames = item.dishes
-            .filter(d => d.name && d.name.trim() !== '')
-            .map(d => d.name);
-        
-        // Format according to grammar rules
-        if (dishNames.length === 0) {
-            dishNameDisplay = 'No dish specified';
-        } else if (dishNames.length === 1) {
-            dishNameDisplay = dishNames[0];
-        } else if (dishNames.length === 2) {
-            dishNameDisplay = `${dishNames[0]} and ${dishNames[1]}`;
-        } else {
-            const lastDish = dishNames.pop();
-            dishNameDisplay = `${dishNames.join(', ')}, and ${lastDish}`;
-        }
-    } else {
-        // Old format or no dish specified
-        dishNameDisplay = item.name || 'No dish specified';
-    }
-    
-    // Check if event is past
-    const eventDate = document.querySelector('.event-details-panel .event-detail-row:nth-child(3)');
-    let isPastEvent = false;
-    if (eventDate) {
-        const dateText = eventDate.textContent.split(':')[1];
-        isPastEvent = isEventPast(dateText);
-    }
-    
-    // Check if notes or recipes exist
-    const hasNotesOrRecipes = item.notes || item.recipes;
-    
-    // Create HTML structure for the card
-    card.innerHTML = `
-        <div class="item-info">
-            <h3>${dishNameDisplay}</h3>
-            <div class="person-info">
-                <span>${item.person}</span>
-                <span class="guest-count-badge"><i class="fas fa-users"></i> ${guestCount} guest${guestCount !== 1 ? 's' : ''}</span>
-                ${dishesHtml}
-            </div>
-        </div>
-        <div class="item-actions">
-            ${hasNotesOrRecipes ? `
-                <button class="item-action-btn notes-btn" title="View Notes & Recipes">
-                    <i class="fas fa-sticky-note" style="color: #4f46e5;"></i>
-                </button>
-                <span class="action-separator">|</span>
-            ` : ''}
-            ${!isPastEvent ? `
-                <button class="item-action-btn edit-btn" title="Edit Item">
-                    <i class="fas fa-pencil-alt"></i>
-                </button>
-                <button class="item-action-btn delete-btn" title="Remove Item">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            ` : ''}
-        </div>
-        ${hasNotesOrRecipes ? `
-            <div class="notes-content" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f3f4f6;">
-                ${item.notes ? `
-                    <div class="notes-section">
-                        <h4>Notes:</h4>
-                        <p>${item.notes.replace(/\n/g, '<br>')}</p>
-                    </div>
-                ` : ''}
-                ${item.recipes ? `
-                    <div class="recipes-section">
-                        <h4>Recipes:</h4>
-                        <p>${item.recipes.replace(/\n/g, '<br>')}</p>
-                    </div>
-                ` : ''}
-            </div>
-        ` : ''}
-    `;
-    
-    // Add event listeners
-    if (hasNotesOrRecipes) {
-        const notesBtn = card.querySelector('.notes-btn');
-        const notesContent = card.querySelector('.notes-content');
-        
-        notesBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            notesContent.style.display = notesContent.style.display === 'none' ? 'block' : 'none';
-        });
-    }
-    
-    // Add edit and delete event listeners if not a past event
-    if (!isPastEvent) {
-        const editBtn = card.querySelector('.edit-btn');
-        const deleteBtn = card.querySelector('.delete-btn');
-        
-        if (editBtn) {
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                document.dispatchEvent(new CustomEvent('showEditItemModal', { 
-                    detail: { item: item }
-                }));
-            });
-        }
-        
-        if (deleteBtn) {
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                document.dispatchEvent(new CustomEvent('showDeleteConfirmation', { 
-                    detail: { itemId: item.id }
-                }));
-            });
-        }
-    }
-    
-    return card;
-}
+});
