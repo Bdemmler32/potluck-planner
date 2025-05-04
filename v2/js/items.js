@@ -15,7 +15,14 @@ function renderItemsList(items = {}, filterCategory = 'All') {
     // Filter items by category if needed
     const filteredItems = filterCategory === 'All' 
         ? itemsArray 
-        : itemsArray.filter(item => item.category === filterCategory);
+        : itemsArray.filter(item => {
+            // Handle both old and new formats
+            if (Array.isArray(item.dishes) && item.dishes.length > 0) {
+                return item.dishes.some(dish => dish.category === filterCategory);
+            } else {
+                return item.category === filterCategory;
+            }
+        });
     
     if (filteredItems.length === 0) {
         // No items message
@@ -47,20 +54,36 @@ function createItemCard(item) {
     if (Array.isArray(item.dishes) && item.dishes.length > 0) {
         // Multiple dishes
         item.dishes.forEach(dish => {
-            dishesHtml += `
-                <span class="category-badge">${dish.category}</span>
-            `;
+            if (dish.name && dish.category) {
+                dishesHtml += `
+                    <span class="category-badge">${dish.category}</span>
+                `;
+            }
         });
-    } else if (item.name) {
+    } else if (item.name && item.category) {
         // Single dish (old format)
         dishesHtml = `<span class="category-badge">${item.category}</span>`;
     }
     
+    // Determine the dish name display
+    let dishNameDisplay = '';
+    if (Array.isArray(item.dishes) && item.dishes.length > 0) {
+        // Get all valid dish names and join them
+        const dishNames = item.dishes
+            .filter(d => d.name && d.name.trim() !== '')
+            .map(d => d.name);
+        
+        dishNameDisplay = dishNames.length > 0 
+            ? dishNames.join(', ') 
+            : 'No dish specified';
+    } else {
+        // Old format or no dish specified
+        dishNameDisplay = item.name || 'No dish specified';
+    }
+    
     card.innerHTML = `
         <div class="item-info">
-            <h3>${Array.isArray(item.dishes) && item.dishes.length > 0 
-                ? item.dishes.map(d => d.name).join(', ') 
-                : item.name || 'No dish specified'}</h3>
+            <h3>${dishNameDisplay}</h3>
             <p class="item-person">Brought by: ${item.person}</p>
             <div class="item-badges">
                 <span class="guest-count-badge"><i class="fas fa-users"></i> ${guestCount} guest${guestCount !== 1 ? 's' : ''}</span>
@@ -84,16 +107,30 @@ function createItemCard(item) {
         const editBtn = card.querySelector('.edit-btn');
         const deleteBtn = card.querySelector('.delete-btn');
         
-        editBtn.addEventListener('click', () => {
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent event bubbling
             showEditItemModal(item);
         });
         
-        deleteBtn.addEventListener('click', () => {
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent event bubbling
             showDeleteConfirmation(item.id);
         });
     }
     
     return card;
+}
+
+// Count items by category
+function countItemsByCategory(items, category) {
+    return Object.values(items).filter(item => {
+        // Handle both old and new formats
+        if (Array.isArray(item.dishes) && item.dishes.length > 0) {
+            return item.dishes.some(dish => dish.category === category);
+        } else {
+            return item.category === category;
+        }
+    }).length;
 }
 
 // Add a dish template to the modal
@@ -176,9 +213,13 @@ function showAddItemModal(eventId) {
     // Add initial dish template
     addDishTemplate();
     
-    // Add button for additional dishes
+    // Add button for additional dishes - remove previous listeners
     const addDishBtn = document.getElementById('add-dish-btn');
-    addDishBtn.addEventListener('click', function() {
+    const newAddDishBtn = addDishBtn.cloneNode(true);
+    addDishBtn.parentNode.replaceChild(newAddDishBtn, addDishBtn);
+    
+    // Add new listener
+    newAddDishBtn.addEventListener('click', function() {
         const dishCount = document.querySelectorAll('.dish-entry').length;
         addDishTemplate('', 'Main Dish', dishCount);
     });
@@ -214,9 +255,11 @@ function showEditItemModal(item) {
     if (Array.isArray(item.dishes) && item.dishes.length > 0) {
         // New format with multiple dishes
         item.dishes.forEach((dish, index) => {
-            addDishTemplate(dish.name, dish.category, index);
+            if (dish.name && dish.category) {
+                addDishTemplate(dish.name, dish.category, index);
+            }
         });
-    } else if (item.name) {
+    } else if (item.name && item.category) {
         // Old format with single dish
         addDishTemplate(item.name, item.category, 0);
     } else {
@@ -224,9 +267,13 @@ function showEditItemModal(item) {
         addDishTemplate();
     }
     
-    // Add button for additional dishes
+    // Add button for additional dishes - remove previous listeners
     const addDishBtn = document.getElementById('add-dish-btn');
-    addDishBtn.addEventListener('click', function() {
+    const newAddDishBtn = addDishBtn.cloneNode(true);
+    addDishBtn.parentNode.replaceChild(newAddDishBtn, addDishBtn);
+    
+    // Add new listener
+    newAddDishBtn.addEventListener('click', function() {
         const dishCount = document.querySelectorAll('.dish-entry').length;
         addDishTemplate('', 'Main Dish', dishCount);
     });
