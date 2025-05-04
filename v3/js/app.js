@@ -43,32 +43,93 @@ function setupEventListeners() {
     const closeEventModal = document.getElementById('close-event-modal');
     const cancelEventBtn = document.getElementById('cancel-event-btn');
 
-    eventForm.addEventListener('submit', handleEventFormSubmit);
-    closeEventModal.addEventListener('click', hideEventModal);
-    cancelEventBtn.addEventListener('click', hideEventModal);
+    if (eventForm) {
+        eventForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Get form data
+            const eventId = document.getElementById('event-id').value;
+            const name = document.getElementById('event-name').value;
+            const host = document.getElementById('host-name').value;
+            const date = document.getElementById('event-date').value;
+            const time = document.getElementById('event-time').value;
+            const location = document.getElementById('event-location').value;
+            const description = document.getElementById('event-description').value;
+            
+            // Validate required fields
+            if (!name || !host || !date || !time || !location) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            // Prepare event data
+            const eventData = {
+                name,
+                host,
+                date,
+                time,
+                location,
+                description
+            };
+            
+            // Create or update the event in Firebase
+            if (eventId) {
+                // Update existing event
+                updateEvent(eventId, eventData);
+            } else {
+                // Create new event
+                createEvent(eventData);
+            }
+            
+            // Hide the modal
+            hideEventModal();
+        });
+    }
+    
+    if (closeEventModal) {
+        closeEventModal.addEventListener('click', hideEventModal);
+    }
+    
+    if (cancelEventBtn) {
+        cancelEventBtn.addEventListener('click', hideEventModal);
+    }
 
     // Item Form listeners
     const itemForm = document.getElementById('item-form');
     const closeItemModal = document.getElementById('close-item-modal');
     const cancelItemBtn = document.getElementById('cancel-item-btn');
 
-    itemForm.addEventListener('submit', handleItemFormSubmit);
-    closeItemModal.addEventListener('click', hideItemModal);
-    cancelItemBtn.addEventListener('click', hideItemModal);
+    if (itemForm) {
+        itemForm.addEventListener('submit', handleItemFormSubmit);
+    }
+    
+    if (closeItemModal) {
+        closeItemModal.addEventListener('click', hideItemModal);
+    }
+    
+    if (cancelItemBtn) {
+        cancelItemBtn.addEventListener('click', hideItemModal);
+    }
 
     // Delete confirmation listeners
     const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
     const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
 
-    confirmDeleteBtn.addEventListener('click', confirmDeleteItem);
-    cancelDeleteBtn.addEventListener('click', hideConfirmModal);
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', confirmDeleteItem);
+    }
+    
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', hideConfirmModal);
+    }
     
     // Add dish button listener
     const addDishBtn = document.getElementById('add-dish-btn');
-    addDishBtn.addEventListener('click', function() {
-        const dishCount = document.querySelectorAll('.dish-entry').length;
-        addDishTemplate('', 'Main Dish', dishCount);
-    });
+    if (addDishBtn) {
+        addDishBtn.addEventListener('click', function() {
+            const dishCount = document.querySelectorAll('.dish-entry').length;
+            addDishTemplate('', 'Main Dish', dishCount);
+        });
+    }
 }
 
 // Navigation Functions
