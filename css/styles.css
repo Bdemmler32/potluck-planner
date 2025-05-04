@@ -5,27 +5,30 @@
     box-sizing: border-box;
 }
 
+:root {
+    --gutter-xs: 0.75rem;  /* 12px */
+    --gutter-sm: 1.25rem;  /* 20px */
+    --gutter-md: 2rem;     /* 32px */
+    --gutter-lg: 3rem;     /* 48px */
+    --content-max-width: 1200px;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     color: #333;
     background-color: #f9fafb;
+    padding: 0 var(--gutter-sm);
 }
 
-.container,
-#main-content {
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: clamp(1rem, 5vw, 2rem);
-    padding-right: clamp(1rem, 5vw, 2rem);
+.container {
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    width: 100%;
+    padding-left: var(--gutter-sm);
+    padding-right: var(--gutter-sm);
 }
 
-.event-card,
-.item-card {
-    margin-left: 0.25rem;
-    margin-right: 0.25rem;
-}
 /* Typography */
 h1, h2, h3, h4 {
     margin-bottom: 0.5rem;
@@ -40,7 +43,7 @@ p {
 .app-header {
     background-color: #4f46e5;
     color: white;
-    padding: 1rem 0;
+    padding: 1rem var(--gutter-sm);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -78,7 +81,7 @@ p {
 
 /* Main Content */
 #main-content {
-    padding: 2rem 0;
+    padding: var(--gutter-md) var(--gutter-sm);
     min-height: calc(100vh - 130px);
 }
 
@@ -88,6 +91,7 @@ p {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
+    padding: 0 var(--gutter-xs);
 }
 
 .event-list {
@@ -95,6 +99,7 @@ p {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1rem;
     margin-bottom: 2rem;
+    padding: 0 var(--gutter-xs);
 }
 
 .event-card {
@@ -159,12 +164,14 @@ p {
     background-color: white;
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin: 0 var(--gutter-xs);
 }
 
 .section-title {
     margin-bottom: 1rem;
     font-size: 1.5rem;
     color: #1f2937;
+    padding: 0 var(--gutter-xs);
 }
 
 .past-events-title {
@@ -177,6 +184,7 @@ p {
     display: flex;
     align-items: center;
     margin-bottom: 1rem;
+    padding: 0 var(--gutter-xs);
 }
 
 .back-btn {
@@ -228,7 +236,7 @@ p {
     background-color: white;
     border-radius: 0.5rem;
     padding: 1rem;
-    margin-bottom: 1rem;
+    margin: 0 var(--gutter-xs) 1rem var(--gutter-xs);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -245,7 +253,7 @@ p {
     border-left: 4px solid #f59e0b;
     color: #92400e;
     padding: 1rem;
-    margin-bottom: 1rem;
+    margin: 0 var(--gutter-xs) 1rem var(--gutter-xs);
     border-radius: 0.25rem;
     display: flex;
     align-items: center;
@@ -261,7 +269,7 @@ p {
     color: #065f46;
     padding: 0.75rem;
     border-radius: 0.25rem;
-    margin-bottom: 1rem;
+    margin: 0 var(--gutter-xs) 1rem var(--gutter-xs);
 }
 
 /* Filter Tabs */
@@ -271,6 +279,7 @@ p {
     align-items: center;
     gap: 0.5rem;
     margin-bottom: 1rem;
+    padding: 0 var(--gutter-xs);
 }
 
 .filter-label {
@@ -307,6 +316,7 @@ p {
 /* Item List */
 .items-container {
     margin-bottom: 1.5rem;
+    padding: 0 var(--gutter-xs);
 }
 
 .item-card {
@@ -403,6 +413,7 @@ p {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s;
     z-index: 10;
+    margin-right: var(--gutter-sm);
 }
 
 .add-item-btn span {
@@ -425,6 +436,7 @@ p {
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 100;
     overflow: auto;
+    padding: 0 var(--gutter-sm);
 }
 
 .modal-content {
@@ -578,7 +590,7 @@ input:focus, select:focus, textarea:focus {
 .app-footer {
     background-color: #f3f4f6;
     border-top: 1px solid #e5e7eb;
-    padding: 1rem 0;
+    padding: 1rem var(--gutter-sm);
     text-align: center;
     color: #6b7280;
     font-size: 0.875rem;
@@ -595,6 +607,11 @@ input:focus, select:focus, textarea:focus {
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
+    :root {
+        --gutter-sm: 1rem;
+        --gutter-md: 1.5rem;
+    }
+    
     .event-list {
         grid-template-columns: 1fr;
     }
@@ -610,36 +627,17 @@ input:focus, select:focus, textarea:focus {
         gap: 1rem;
     }
 }
-/* Mobile Fixes for Margin and Padding */
-@media (max-width: 768px) {
-    /* Ensure consistent padding on mobile */
-    .container,
-    #main-content {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
 
-    /* Ensure event and item cards don’t touch the screen edge */
-    .event-card,
-    .item-card {
-        margin-left: 0.25rem;
-        margin-right: 0.25rem;
+@media (min-width: 769px) and (max-width: 1024px) {
+    :root {
+        --gutter-sm: 1.5rem;
+        --gutter-md: 2rem;
     }
+}
 
-    /* Single column event list */
-    .event-list {
-        grid-template-columns: 1fr;
-    }
-
-    /* Stack form rows */
-    .form-row {
-        flex-direction: column;
-        gap: 0;
-    }
-
-    .events-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
+@media (min-width: 1025px) {
+    :root {
+        --gutter-sm: 2rem;
+        --gutter-md: 3rem;
     }
 }
