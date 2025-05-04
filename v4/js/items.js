@@ -89,6 +89,14 @@ function createItemCard(item) {
         dishNameDisplay = item.name || 'No dish specified';
     }
     
+    // Check if event is past
+    const eventDate = document.querySelector('.event-details-panel .event-detail-row:nth-child(3)');
+    let isPastEvent = false;
+    if (eventDate) {
+        const dateText = eventDate.textContent.split(':')[1];
+        isPastEvent = isEventPast(dateText);
+    }
+    
     card.innerHTML = `
         <div class="item-info">
             <h3>${item.person}: ${dishNameDisplay}</h3>
@@ -98,7 +106,7 @@ function createItemCard(item) {
             </div>
         </div>
         <div class="item-actions">
-            ${!isEventPast(eventDetailData.event.date) ? `
+            ${!isPastEvent ? `
                 <button class="item-action-btn edit-btn" title="Edit Item">
                     <i class="fas fa-pencil-alt"></i>
                 </button>
@@ -110,22 +118,46 @@ function createItemCard(item) {
     `;
     
     // Add edit and delete event listeners if not a past event
-    if (!isEventPast(eventDetailData.event.date)) {
+    if (!isPastEvent) {
         const editBtn = card.querySelector('.edit-btn');
         const deleteBtn = card.querySelector('.delete-btn');
         
-        editBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent event bubbling
-            showEditItemModal(item);
-        });
+        if (editBtn) {
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent event bubbling
+                document.dispatchEvent(new CustomEvent('showEditItemModal', { 
+                    detail: { item: item }
+                }));
+            });
+        }
         
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent event bubbling
-            showDeleteConfirmation(item.id);
-        });
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent event bubbling
+                document.dispatchEvent(new CustomEvent('showDeleteConfirmation', { 
+                    detail: { itemId: item.id }
+                }));
+            });
+        }
     }
     
     return card;
+}
+
+// Check if a date is past
+function isEventPast(dateStr) {
+    if (!dateStr) return false;
+    
+    // Try to extract date from string like "When: June 15, 2025, 6:00 PM - 9:00 PM"
+    const datePart = dateStr.split(',')[0].trim();
+    const date = new Date(datePart);
+    
+    // Create a date for tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
+    return date < tomorrow;
 }
 
 // Add a dish template to the modal
@@ -240,7 +272,7 @@ function showEditItemModal(item) {
     document.getElementById('person-name').value = item.person;
     document.getElementById('guest-count').value = item.guestCount || 1;
     document.getElementById('item-id').value = item.id;
-    document.getElementById('item-event-id').value = eventDetailData.event.id;
+    document.getElementById('item-event-id').value = item.eventId || document.getElementById('delete-event-id').value;
     
     // Clear dishes container
     const dishesContainer = document.getElementById('dishes-container');
@@ -286,9 +318,7 @@ function hideItemModal() {
     modal.style.display = 'none';
 }
 
-function handleItemFormSubmit(e) {
-    e.preventDefault();
-    
+function handleItemFormSubmit() {
     // Get form data
     const itemId = document.getElementById('item-id').value;
     const eventId = document.getElementById('item-event-id').value;
@@ -360,16 +390,32 @@ function updateItem(eventId, itemId, itemData) {
     });
 }
 
-// Delete Confirmation
+// Show Delete Confirmation
 function showDeleteConfirmation(itemId) {
     const modal = document.getElementById('confirm-modal');
     
     // Set the item ID to be deleted
     document.getElementById('delete-item-id').value = itemId;
-    document.getElementById('delete-event-id').value = eventDetailData.event.id;
     
-    // Show the modal
-    modal.style.display = 'block';
+    // Use the current event ID from the page
+    const eventDetailHeader = document.querySelector('.event-detail-header');
+    if (eventDetailHeader) {
+        const eventTitle = eventDetailHeader.querySelector('.event-title').textContent;
+        // Find the event in Firebase that matches this title
+        const eventsRef = database.ref('events');
+        eventsRef.once('value', (snapshot) => {
+            const events = snapshot.val();
+            for (const eventId in events) {
+                if (events[eventId].name === eventTitle) {
+                    document.getElementById('delete-event-id').value = eventId;
+                    break;
+                }
+            }
+            
+            // Show the modal
+            modal.style.display = 'block';
+        });
+    }
 }
 
 function hideConfirmModal() {
@@ -398,3 +444,21 @@ function confirmDeleteItem() {
         hideConfirmModal();
     });
 }
+
+// Set up event listeners for communication between files
+document.addEventListener('showAddItemModal', function(e) {
+    showAddItemModal(e.detail.eventId);
+});
+
+document.addEventListener('showEditItemModal', function(e) {
+    showEditItemModal(e.detail.item);
+});
+
+document.addEventListener('showDeleteConfirmation', function(e) {
+    showDeleteConfirmation(e.detail.itemId);
+});
+
+document.addEventListener('hideItemModal', hideItemModal);
+document.addEventListener('hideConfirmModal', hideConfirmModal);
+document.addEventListener('confirmDelete', confirmDeleteItem);
+document.addEventListener('submitItemForm', handleItemFormSubmit);

@@ -27,29 +27,45 @@ const eventDetailData = {}; // To store the currently viewed event's data
 // Current Date for checking if events are past
 const currentDate = new Date();
 
-// Load all events from Firebase
-function loadEvents() {
-    // Get a reference to the events collection
-    const eventsRef = database.ref('events');
-    
-    // Listen for value changes
-    eventsRef.on('value', (snapshot) => {
-        renderEventListView(snapshot.val());
-    });
-}
-
 // Initialize the app
 function initApp() {
-    // Load events and render the event list view
-    loadEvents();
-
-    // Setup event listeners for global elements
+    // Set up event listeners for global elements
     setupEventListeners();
+    
+    // Get events from Firebase
+    const eventsRef = database.ref('events');
+    eventsRef.on('value', (snapshot) => {
+        const eventsData = snapshot.val() || {};
+        
+        // Render the event list view initially
+        document.dispatchEvent(new CustomEvent('eventsLoaded', { 
+            detail: { events: eventsData }
+        }));
+    });
 }
 
 // Setup main event listeners
 function setupEventListeners() {
-    // Event Form listeners
+    // Custom events for communication between files
+    document.addEventListener('eventsLoaded', function(e) {
+        if (currentView === 'eventList') {
+            // Let events.js know to render the event list
+            const event = new CustomEvent('renderEventList', { 
+                detail: { events: e.detail.events }
+            });
+            document.dispatchEvent(event);
+        }
+    });
+    
+    document.addEventListener('navigateToDetail', function(e) {
+        navigateToEventDetail(e.detail.eventId);
+    });
+    
+    document.addEventListener('navigateToList', function() {
+        navigateToEventList();
+    });
+    
+    // Form event listeners
     const eventForm = document.getElementById('event-form');
     const closeEventModal = document.getElementById('close-event-modal');
     const cancelEventBtn = document.getElementById('cancel-event-btn');
@@ -57,51 +73,20 @@ function setupEventListeners() {
     if (eventForm) {
         eventForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            // Get form data
-            const eventId = document.getElementById('event-id').value;
-            const name = document.getElementById('event-name').value;
-            const host = document.getElementById('host-name').value;
-            const date = document.getElementById('event-date').value;
-            const time = document.getElementById('event-time').value;
-            const location = document.getElementById('event-location').value;
-            const description = document.getElementById('event-description').value;
-            
-            // Validate required fields
-            if (!name || !host || !date || !time || !location) {
-                alert('Please fill in all required fields.');
-                return;
-            }
-            
-            // Prepare event data
-            const eventData = {
-                name,
-                host,
-                date,
-                time,
-                location,
-                description
-            };
-            
-            // Create or update the event in Firebase
-            if (eventId) {
-                // Update existing event
-                updateEvent(eventId, eventData);
-            } else {
-                // Create new event
-                createEvent(eventData);
-            }
-            
-            // Hide the modal
-            hideEventModal();
+            document.dispatchEvent(new Event('submitEventForm'));
         });
     }
     
     if (closeEventModal) {
-        closeEventModal.addEventListener('click', hideEventModal);
+        closeEventModal.addEventListener('click', function() {
+            document.dispatchEvent(new Event('hideEventModal'));
+        });
     }
     
     if (cancelEventBtn) {
-        cancelEventBtn.addEventListener('click', hideEventModal);
+        cancelEventBtn.addEventListener('click', function() {
+            document.dispatchEvent(new Event('hideEventModal'));
+        });
     }
 
     // Item Form listeners
@@ -110,15 +95,22 @@ function setupEventListeners() {
     const cancelItemBtn = document.getElementById('cancel-item-btn');
 
     if (itemForm) {
-        itemForm.addEventListener('submit', handleItemFormSubmit);
+        itemForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.dispatchEvent(new Event('submitItemForm'));
+        });
     }
     
     if (closeItemModal) {
-        closeItemModal.addEventListener('click', hideItemModal);
+        closeItemModal.addEventListener('click', function() {
+            document.dispatchEvent(new Event('hideItemModal'));
+        });
     }
     
     if (cancelItemBtn) {
-        cancelItemBtn.addEventListener('click', hideItemModal);
+        cancelItemBtn.addEventListener('click', function() {
+            document.dispatchEvent(new Event('hideItemModal'));
+        });
     }
 
     // Delete confirmation listeners
@@ -126,19 +118,14 @@ function setupEventListeners() {
     const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
 
     if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', confirmDeleteItem);
+        confirmDeleteBtn.addEventListener('click', function() {
+            document.dispatchEvent(new Event('confirmDelete'));
+        });
     }
     
     if (cancelDeleteBtn) {
-        cancelDeleteBtn.addEventListener('click', hideConfirmModal);
-    }
-    
-    // Add dish button listener
-    const addDishBtn = document.getElementById('add-dish-btn');
-    if (addDishBtn) {
-        addDishBtn.addEventListener('click', function() {
-            const dishCount = document.querySelectorAll('.dish-entry').length;
-            addDishTemplate('', 'Main Dish', dishCount);
+        cancelDeleteBtn.addEventListener('click', function() {
+            document.dispatchEvent(new Event('hideConfirmModal'));
         });
     }
 }
@@ -153,10 +140,31 @@ function navigateToEventList() {
 function navigateToEventDetail(eventId) {
     currentView = 'eventDetail';
     currentEventId = eventId;
-    loadEventDetail(eventId);
+    
+    // Get the event data
+    const eventRef = database.ref(`events/${eventId}`);
+    eventRef.on('value', (snapshot) => {
+        const eventData = snapshot.val();
+        if (eventData) {
+            // Store event data in application state
+            eventDetailData.event = eventData;
+            eventDetailData.event.id = eventId;
+            
+            // Render the view
+            renderView();
+            
+            // Let event.js know to render the detail view
+            document.dispatchEvent(new CustomEvent('renderEventDetail', {
+                detail: { event: eventDetailData.event }
+            }));
+        } else {
+            // Event not found, go back to list
+            navigateToEventList();
+        }
+    });
 }
 
-// View Rendering
+// View Rendering - Just handles navigation buttons
 function renderView() {
     // Clear nav buttons and re-add based on view
     navButtons.innerHTML = '';
@@ -175,14 +183,17 @@ function renderView() {
         // Show action buttons for event detail view
         const event = eventDetailData.event;
         if (event) {
-            const isPastEvent = isEventPast(event.date);
+            // Let events.js check if the event is past
+            const isPast = new Date(event.date) < new Date();
             
             // Info button
             const infoBtn = document.createElement('button');
             infoBtn.className = 'header-home-btn';
             infoBtn.title = 'Event Details';
             infoBtn.innerHTML = '<i class="fas fa-info-circle"></i>';
-            infoBtn.addEventListener('click', toggleEventDetails);
+            infoBtn.addEventListener('click', function() {
+                document.dispatchEvent(new Event('toggleEventDetails'));
+            });
             navButtons.appendChild(infoBtn);
             
             // Share button
@@ -190,17 +201,21 @@ function renderView() {
             shareBtn.className = 'header-home-btn';
             shareBtn.title = 'Share';
             shareBtn.innerHTML = '<i class="fas fa-share-alt"></i>';
-            shareBtn.addEventListener('click', showShareMessage);
+            shareBtn.addEventListener('click', function() {
+                document.dispatchEvent(new Event('showShareMessage'));
+            });
             navButtons.appendChild(shareBtn);
             
             // Edit button (only for non-past events)
-            if (!isPastEvent) {
+            if (!isPast) {
                 const editBtn = document.createElement('button');
                 editBtn.className = 'header-home-btn';
                 editBtn.title = 'Edit Event';
                 editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-                editBtn.addEventListener('click', () => {
-                    showEditEventModal(event);
+                editBtn.addEventListener('click', function() {
+                    document.dispatchEvent(new CustomEvent('showEditEventModal', {
+                        detail: { event: event }
+                    }));
                 });
                 navButtons.appendChild(editBtn);
             }
@@ -215,18 +230,6 @@ function renderView() {
             });
             navButtons.appendChild(homeBtn);
         }
-    }
-
-    // Render the appropriate view
-    switch (currentView) {
-        case 'eventList':
-            renderEventListView();
-            break;
-        case 'eventDetail':
-            renderEventDetailView();
-            break;
-        default:
-            renderEventListView();
     }
 }
 
