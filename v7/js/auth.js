@@ -1,4 +1,4 @@
-// Initialize Firebase Auth
+// Get references to Firebase auth (initialized in index.html)
 const auth = firebase.auth();
 const provider = new firebase.auth.GoogleAuthProvider();
 

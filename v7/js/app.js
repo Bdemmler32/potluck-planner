@@ -1,17 +1,4 @@
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCWfziCIR8JvV7QePq43zQ-yiHoypC5UCI",
-  authDomain: "bobs-potluck-planner.firebaseapp.com",
-  databaseURL: "https://bobs-potluck-planner-default-rtdb.firebaseio.com",
-  projectId: "bobs-potluck-planner",
-  storageBucket: "bobs-potluck-planner.firebasestorage.app",
-  messagingSenderId: "569139416139",
-  appId: "1:569139416139:web:4f7cd99d3bb5cbb5e251ce",
-  measurementId: "G-WSZGYWQS48"
-};
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+// Get Firebase database reference (Firebase already initialized in index.html)
 const database = firebase.database();
 
 // DOM Elements
@@ -333,6 +320,7 @@ function renderView() {
             navButtons.appendChild(shareBtn);
         }
     }
+    
     // User profile button (always last)
     const userBtn = document.createElement('button');
     userBtn.className = 'header-home-btn';
