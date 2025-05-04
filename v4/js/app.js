@@ -27,6 +27,17 @@ const eventDetailData = {}; // To store the currently viewed event's data
 // Current Date for checking if events are past
 const currentDate = new Date();
 
+// Load all events from Firebase
+function loadEvents() {
+    // Get a reference to the events collection
+    const eventsRef = database.ref('events');
+    
+    // Listen for value changes
+    eventsRef.on('value', (snapshot) => {
+        renderEventListView(snapshot.val());
+    });
+}
+
 // Initialize the app
 function initApp() {
     // Load events and render the event list view
