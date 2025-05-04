@@ -153,7 +153,7 @@ function renderView() {
     if (currentView === 'eventList') {
         // Just show home button on the home screen
         const homeBtn = document.createElement('button');
-        homeBtn.className = 'header-action-btn';
+        homeBtn.className = 'header-home-btn'; // Make sure CSS class matches
         homeBtn.title = 'Home';
         homeBtn.innerHTML = '<i class="fas fa-home"></i>';
         homeBtn.addEventListener('click', () => {
@@ -169,7 +169,7 @@ function renderView() {
             // Add buttons in the right order (home will be last)
             // Info button
             const infoBtn = document.createElement('button');
-            infoBtn.className = 'header-action-btn';
+            infoBtn.className = 'header-home-btn'; // Using same class for consistent styling
             infoBtn.title = 'Event Details';
             infoBtn.innerHTML = '<i class="fas fa-info-circle"></i>';
             infoBtn.addEventListener('click', toggleEventDetails);
@@ -177,7 +177,7 @@ function renderView() {
             
             // Share button
             const shareBtn = document.createElement('button');
-            shareBtn.className = 'header-action-btn';
+            shareBtn.className = 'header-home-btn';
             shareBtn.title = 'Share';
             shareBtn.innerHTML = '<i class="fas fa-share-alt"></i>';
             shareBtn.addEventListener('click', showShareMessage);
@@ -186,7 +186,7 @@ function renderView() {
             // Edit button (only for non-past events)
             if (!isPastEvent) {
                 const editBtn = document.createElement('button');
-                editBtn.className = 'header-action-btn';
+                editBtn.className = 'header-home-btn';
                 editBtn.title = 'Edit Event';
                 editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
                 editBtn.addEventListener('click', () => {
@@ -197,7 +197,7 @@ function renderView() {
             
             // Home button (always last)
             const homeBtn = document.createElement('button');
-            homeBtn.className = 'header-action-btn';
+            homeBtn.className = 'header-home-btn';
             homeBtn.title = 'Home';
             homeBtn.innerHTML = '<i class="fas fa-home"></i>';
             homeBtn.addEventListener('click', () => {
