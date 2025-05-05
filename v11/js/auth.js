@@ -22,7 +22,7 @@ auth.onAuthStateChanged((user) => {
         // Update UI for authenticated user
         updateAuthUI(true);
         
-        // Always navigate to event list view after sign-in
+        // Always navigate to home screen after sign-in
         navigateToEventList();
         
         // Load user's events (both hosted and joined)
@@ -37,7 +37,8 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
-// Render login view if not authenticated - Fixed for proper centering
+
+// Render login view if not authenticated - Fixed for proper centering and button style
 function renderLoginView() {
     const mainContent = document.getElementById('main-content');
     
@@ -46,25 +47,81 @@ function renderLoginView() {
         // Add login-page class to body
         document.body.classList.add('login-page');
         
+        // Clear main content and set up the login container
         mainContent.innerHTML = `
             <div class="login-container">
                 <div class="login-logo">
                     <img src="assets/logo-4f46e5.png" alt="Event Planner">
                 </div>
                 
-                <button id="login-google-btn" class="btn btn-primary google-btn">
+                <button id="login-google-btn">
                     <i class="fab fa-google"></i> Sign in with Google
                 </button>
             </div>
         `;
         
-        // Add event listener to sign in button
+        // Style the button directly to match Google's standard sign-in button
         const signInBtn = document.getElementById('login-google-btn');
         if (signInBtn) {
+            // Apply Google-style button
+            signInBtn.style.backgroundColor = 'white';
+            signInBtn.style.color = '#757575';
+            signInBtn.style.border = '1px solid #dadce0';
+            signInBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+            signInBtn.style.padding = '0 16px';
+            signInBtn.style.height = '40px';
+            signInBtn.style.borderRadius = '4px';
+            signInBtn.style.display = 'flex';
+            signInBtn.style.alignItems = 'center';
+            signInBtn.style.justifyContent = 'center';
+            signInBtn.style.width = '220px';
+            signInBtn.style.margin = '0 auto';
+            signInBtn.style.fontWeight = '500';
+            signInBtn.style.fontSize = '14px';
+            signInBtn.style.cursor = 'pointer';
+            
+            // Style the Google icon
+            const googleIcon = signInBtn.querySelector('i');
+            if (googleIcon) {
+                googleIcon.style.color = '#4285F4';
+                googleIcon.style.marginRight = '24px';
+                googleIcon.style.fontSize = '18px';
+            }
+            
+            // Add hover effect
+            signInBtn.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f8f9fa';
+                this.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
+            });
+            
+            signInBtn.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = 'white';
+                this.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+            });
+            
+            // Add event listener for sign in
             signInBtn.addEventListener('click', signInWithGoogle);
         }
         
-        // Ensure the navigation buttons are shown
+        // Center the login container vertically
+        const loginContainer = document.querySelector('.login-container');
+        if (loginContainer) {
+            loginContainer.style.display = 'flex';
+            loginContainer.style.flexDirection = 'column';
+            loginContainer.style.justifyContent = 'center';
+            loginContainer.style.alignItems = 'center';
+            loginContainer.style.minHeight = 'calc(100vh - var(--header-height) - 60px)';
+            
+            // Make the logo bigger
+            const logo = loginContainer.querySelector('.login-logo');
+            if (logo) {
+                logo.style.width = '100%';
+                logo.style.maxWidth = '400px';
+                logo.style.margin = '0 auto 2rem';
+            }
+        }
+        
+        // Ensure the navigation buttons are shown but visibility hidden
         renderView();
         
         // Scroll to top
@@ -101,8 +158,12 @@ function signInWithGoogle() {
         });
 }
 
-// Sign out - Always redirect to home after sign out
+// Sign out - Fixed to ensure modal is closed and user is redirected
 function signOut() {
+    // First, make sure the modal is closed
+    hideUserProfileModal();
+    
+    // Then sign out from Firebase
     auth.signOut()
         .then(() => {
             // Force redirect to login view, clearing any event details
@@ -352,10 +413,12 @@ function showUserProfileModal() {
 // Hide user profile modal
 function hideUserProfileModal() {
     const modal = document.getElementById('user-modal');
-    modal.style.display = 'none';
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
-// Set up event listeners
+// Set up event listeners - Improved close functionality
 document.addEventListener('DOMContentLoaded', function() {
     // User profile modal
     const closeUserModal = document.getElementById('close-user-modal');
@@ -363,7 +426,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const signOutBtn = document.getElementById('sign-out-btn');
     
     if (closeUserModal) {
-        closeUserModal.addEventListener('click', hideUserProfileModal);
+        closeUserModal.addEventListener('click', function() {
+            hideUserProfileModal();
+        });
     }
     
     if (googleSignInBtn) {
@@ -371,8 +436,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     if (signOutBtn) {
-        signOutBtn.addEventListener('click', signOut);
+        signOutBtn.addEventListener('click', function() {
+            signOut();
+        });
     }
+    
+    // Handle ESC key to close modals
+    window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            hideUserProfileModal();
+        }
+    });
+    
+    // Close modals when clicking outside
+    window.addEventListener('click', function(e) {
+        const userModal = document.getElementById('user-modal');
+        if (e.target === userModal) {
+            hideUserProfileModal();
+        }
+    });
 });
 
 // Custom event listeners for auth-related events

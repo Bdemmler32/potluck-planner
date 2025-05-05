@@ -171,10 +171,20 @@ function ensureNavButtonsVisible() {
     }
 }
 
-// Add window resize event listener to ensure responsive behavior
-window.addEventListener('resize', function() {
-    ensureNavButtonsVisible();
-});
+// Fix alignment of header with content
+function fixHeaderAlignment() {
+    const header = document.querySelector('.app-header .container');
+    const content = document.querySelector('#main-content');
+    
+    if (header && content) {
+        // Set the same padding for both
+        const padding = 'var(--gutter-xs)';
+        header.style.paddingLeft = padding;
+        header.style.paddingRight = padding;
+        content.style.paddingLeft = padding;
+        content.style.paddingRight = padding;
+    }
+}
 
 // Fix for leave event button functionality
 function fixLeaveEventButton() {
@@ -217,12 +227,121 @@ function fixModalButtonLayout() {
     });
 }
 
+// Fix login page button style to match Google standard
+function fixLoginButtonStyle() {
+    const loginBtn = document.getElementById('login-google-btn');
+    if (loginBtn) {
+        // Standard Google sign-in button style
+        loginBtn.style.backgroundColor = 'white';
+        loginBtn.style.color = '#757575';
+        loginBtn.style.border = '1px solid #dadce0';
+        loginBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+        loginBtn.style.padding = '0 16px';
+        loginBtn.style.height = '40px';
+        loginBtn.style.display = 'flex';
+        loginBtn.style.alignItems = 'center';
+        loginBtn.style.justifyContent = 'center';
+        loginBtn.style.maxWidth = '240px';
+        loginBtn.style.margin = '0 auto';
+        loginBtn.style.fontWeight = '500';
+        
+        // Fix Google icon
+        const googleIcon = loginBtn.querySelector('i');
+        if (googleIcon) {
+            googleIcon.style.color = '#4285F4';
+            googleIcon.style.marginRight = '24px';
+            googleIcon.style.marginLeft = '1px';
+            googleIcon.style.fontSize = '18px';
+        }
+        
+        // Add hover effect
+        loginBtn.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#f8f9fa';
+            this.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
+        });
+        
+        loginBtn.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = 'white';
+            this.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+        });
+    }
+}
+
+// Fix user profile modal to properly close
+function fixUserProfileModal() {
+    const userModal = document.getElementById('user-modal');
+    const closeBtn = document.getElementById('close-user-modal');
+    const signOutBtn = document.getElementById('sign-out-btn');
+    
+    if (userModal && closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            userModal.style.display = 'none';
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === userModal) {
+                userModal.style.display = 'none';
+            }
+        });
+    }
+    
+    if (signOutBtn) {
+        signOutBtn.addEventListener('click', function() {
+            // Make sure to hide the modal first before signing out
+            if (userModal) {
+                userModal.style.display = 'none';
+            }
+            // Then call signOut which is defined in auth.js
+            if (typeof signOut === 'function') {
+                signOut();
+            }
+        });
+    }
+    
+    // Handle ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            if (userModal) {
+                userModal.style.display = 'none';
+            }
+        }
+    });
+}
+
+// Center the login container vertically
+function centerLoginContainer() {
+    if (document.body.classList.contains('login-page')) {
+        const loginContainer = document.querySelector('.login-container');
+        const mainContent = document.getElementById('main-content');
+        
+        if (loginContainer && mainContent) {
+            loginContainer.style.display = 'flex';
+            loginContainer.style.flexDirection = 'column';
+            loginContainer.style.justifyContent = 'center';
+            loginContainer.style.alignItems = 'center';
+            loginContainer.style.height = '100%';
+            
+            // Enlarge the logo
+            const logo = loginContainer.querySelector('.login-logo');
+            if (logo) {
+                logo.style.width = '100%';
+                logo.style.maxWidth = '400px';
+                logo.style.margin = '0 auto 2rem';
+            }
+        }
+    }
+}
+
 // Check page state and apply fixes
 document.addEventListener('DOMContentLoaded', function() {
+    // Apply all fixes
     ensureNavButtonsVisible();
-    
-    // Apply modal button layout fixes
+    fixHeaderAlignment();
     fixModalButtonLayout();
+    fixLoginButtonStyle();
+    fixUserProfileModal();
+    centerLoginContainer();
     
     // Set up mutation observer to watch for leave button additions
     const observer = new MutationObserver(function(mutations) {
@@ -240,10 +359,46 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mainContent) {
         observer.observe(mainContent, { childList: true, subtree: true });
     }
+    
+    // Apply fixes when window resizes
+    window.addEventListener('resize', function() {
+        ensureNavButtonsVisible();
+        fixHeaderAlignment();
+        centerLoginContainer();
+    });
+    
+    // Set up special handling for login page
+    if (document.body.classList.contains('login-page')) {
+        centerLoginContainer();
+        fixLoginButtonStyle();
+    }
 });
 
 // Event listener for when event details are rendered
 document.addEventListener('renderEventDetail', function() {
     // Ensure leave button works after event detail is rendered
     setTimeout(fixLeaveEventButton, 100);
+    // Fix header alignment
+    fixHeaderAlignment();
+});
+
+// Event listener for authentication state changes
+document.addEventListener('authStateChanged', function(e) {
+    if (e.detail.isAuthenticated) {
+        // User is signed in
+        ensureNavButtonsVisible();
+    } else {
+        // User is signed out
+        centerLoginContainer();
+        fixLoginButtonStyle();
+    }
+});
+
+// Fix for specific modals
+document.addEventListener('modalOpened', function(e) {
+    if (e.detail && e.detail.modalId) {
+        if (e.detail.modalId === 'event-modal') {
+            fixModalButtonLayout();
+        }
+    }
 });

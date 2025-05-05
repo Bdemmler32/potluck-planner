@@ -51,7 +51,7 @@ p {
     margin-bottom: 1rem;
 }
 
-/* Header - Updated to be fixed with consistent height */
+/* Header - Updated to be fixed with consistent height and alignment */
 .app-header {
     background-color: var(--main-color);
     color: white;
@@ -72,8 +72,8 @@ p {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-left: var(--gutter-sm);
-    padding-right: var(--gutter-sm);
+    padding-left: var(--gutter-xs);
+    padding-right: var(--gutter-xs);
     height: 100%;
 }
 
@@ -143,7 +143,7 @@ p {
 
 /* Main Content */
 #main-content {
-    padding: var(--gutter-sm) var(--gutter-sm); /* Reduced top padding */
+    padding: var(--gutter-sm) var(--gutter-xs); /* Reduced top padding and aligned with cards */
     min-height: calc(100vh - var(--header-height)); /* Adjusted for no footer except on login */
     flex-grow: 1; /* Allow content to grow and push footer down */
 }
@@ -929,11 +929,12 @@ input[type="checkbox"] {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
 }
 
 .login-logo {
-    width: 80%;
-    max-width: 320px;
+    width: 100%;
+    max-width: 400px; /* Larger logo size */
     margin: 0 auto 2rem;
 }
 
@@ -942,10 +943,32 @@ input[type="checkbox"] {
     height: auto;
 }
 
+/* Updated Google Sign-in button to match standard Google sign-in style */
 #login-google-btn {
-    max-width: 220px;
+    max-width: 240px;
     margin: 0 auto;
     font-size: 0.95rem;
+    padding: 0;
+    height: 40px;
+    background-color: white;
+    color: #757575;
+    border: 1px solid #dadce0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#login-google-btn i {
+    color: #4285F4;
+    margin-right: 24px;
+    margin-left: 1px;
+    font-size: 18px;
+}
+
+#login-google-btn:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
 }
 
 /* Footer - Updated to be fixed at the bottom on login page */
@@ -1061,11 +1084,11 @@ body:not(.login-page) .app-footer {
     
     /* Make login logo responsive */
     .login-logo {
-        max-width: 280px;
+        max-width: 320px;
     }
     
     #login-google-btn {
-        max-width: 200px;
+        max-width: 220px;
     }
 
     /* Ensure modal buttons stack properly on small screens */
@@ -1108,4 +1131,17 @@ body:not(.login-page) .app-footer {
 
 #leave-event-modal .form-actions {
     justify-content: center;
+}
+
+/* Fix for user profile modal to properly close on sign out */
+#user-modal {
+    pointer-events: auto;
+}
+
+#close-user-modal:hover {
+    cursor: pointer;
+}
+
+#sign-out-btn:hover {
+    cursor: pointer;
 }
