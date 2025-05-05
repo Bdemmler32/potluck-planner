@@ -115,7 +115,7 @@ function renderLoginView() {
             // Make the logo bigger
             const logo = loginContainer.querySelector('.login-logo');
             if (logo) {
-                logo.style.width = '100%';
+                logo.style.width = '125%';
                 logo.style.maxWidth = '500px';
                 logo.style.margin = '0 auto 2rem';
             }
