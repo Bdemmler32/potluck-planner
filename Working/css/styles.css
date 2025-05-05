@@ -446,7 +446,7 @@ p {
     transition: opacity 0.5s ease-in-out;
 }
 
-/* RSVP Card Styles - COMPLETELY REDESIGNED */
+/* RSVP Card Styles */
 .item-card {
     background-color: white;
     border-radius: 0.5rem;
@@ -509,10 +509,11 @@ p {
     align-items: center;
     margin-bottom: 0.5rem;
     padding: 0.25rem 0;
+    flex-wrap: wrap;
 }
 
 .rsvp-item-icon {
-    color: #6b7280;
+    color: #4b5563; /* Charcoal gray for square-check icon */
     margin-right: 0.5rem;
     flex-shrink: 0;
 }
@@ -522,14 +523,13 @@ p {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-right: 0.75rem;
-    flex: 1;
+    margin-right: 0.5rem; /* Reduced spacing to make category tag closer */
+    flex: 0 1 auto; /* Allow it to shrink but not grow */
+    max-width: 50%; /* Limit width to allow category to be visible */
 }
 
-/* Updated Category Badge */
+/* Updated Category Badge - with colors for different categories */
 .category-badge {
-    background-color: #dbeafe;
-    color: #1e40af;
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
@@ -537,6 +537,43 @@ p {
     display: inline-flex;
     align-items: center;
     flex-shrink: 0;
+    cursor: pointer; /* Make it clear it's clickable */
+    transition: transform 0.2s;
+}
+
+.category-badge:hover {
+    transform: scale(1.05);
+}
+
+/* Category-specific colors */
+.category-appetizer {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.category-main-dish {
+    background-color: #e0f2fe;
+    color: #0369a1;
+}
+
+.category-side-dish {
+    background-color: #d1fae5;
+    color: #047857;
+}
+
+.category-dessert {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.category-drink {
+    background-color: #ddd6fe;
+    color: #5b21b6;
+}
+
+.category-other {
+    background-color: #e5e7eb;
+    color: #4b5563;
 }
 
 /* Updated Recipe Icon */

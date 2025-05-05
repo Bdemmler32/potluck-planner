@@ -116,9 +116,9 @@ function createItemCard(item) {
             if (dish.name && dish.category) {
                 cardHTML += `
                     <div class="rsvp-item" data-dish-index="${index}">
-                        <i class="fas fa-utensils rsvp-item-icon"></i>
+                        <i class="fas fa-square-check rsvp-item-icon"></i>
                         <div class="rsvp-item-name">${dish.name}</div>
-                        <span class="category-badge clickable-category" data-category="${dish.category}">${dish.category}</span>
+                        <span class="category-badge category-${dish.category.replace(/\s+/g, '-').toLowerCase()}" data-category="${dish.category}">${dish.category}</span>
                         ${dish.recipe ? `
                             <i class="fas fa-file-signature recipe-icon" title="View Recipe"></i>
                         ` : ''}
@@ -138,9 +138,9 @@ function createItemCard(item) {
         // Single dish (old format)
         cardHTML += `
             <div class="rsvp-item" data-dish-index="0">
-                <i class="fas fa-utensils rsvp-item-icon"></i>
+                <i class="fas fa-square-check rsvp-item-icon"></i>
                 <div class="rsvp-item-name">${item.name}</div>
-                <span class="category-badge clickable-category" data-category="${item.category}">${item.category}</span>
+                <span class="category-badge category-${item.category.replace(/\s+/g, '-').toLowerCase()}" data-category="${item.category}">${item.category}</span>
                 ${item.recipes ? `
                     <i class="fas fa-file-signature recipe-icon" title="View Recipe"></i>
                 ` : ''}
@@ -214,7 +214,7 @@ function createItemCard(item) {
     });
     
     // Category tag click for filtering
-    const categoryTags = card.querySelectorAll('.clickable-category');
+    const categoryTags = card.querySelectorAll('.category-badge');
     categoryTags.forEach(tag => {
         tag.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -303,18 +303,6 @@ function addDishTemplate(dishName = '', category = 'Main Dish', recipe = '', ind
             dishEntry.remove();
             // Renumber dishes
             reindexDishes();
-            
-            // Show the Add Item/Dish button after removing
-            const addDishBtn = document.getElementById('add-dish-btn');
-            if (addDishBtn) {
-                addDishBtn.style.display = 'flex';
-                addDishBtn.textContent = 'Add Another Item/Dish';
-                const icon = document.createElement('i');
-                icon.className = 'fas fa-plus-circle';
-                addDishBtn.prepend(icon);
-                // Add space after icon
-                addDishBtn.insertBefore(document.createTextNode(' '), addDishBtn.childNodes[1]);
-            }
         });
     }
 }
@@ -348,7 +336,7 @@ function setupOptionalFieldButtons() {
     });
 }
 
-// Item Modal Functions - Modified for new layout
+// Item Modal Functions - Modified for starting with no dishes
 function showAddItemModal(eventId) {
     if (!currentUser) {
         alert('Please sign in to RSVP for an event');
@@ -377,12 +365,9 @@ function showAddItemModal(eventId) {
     // Pre-fill person field with current user's name
     document.getElementById('person-name').value = currentUser.name;
     
-    // Clear dishes container
+    // Clear dishes container - start with no dishes
     const dishesContainer = document.getElementById('dishes-container');
     dishesContainer.innerHTML = '';
-    
-    // Add at least one dish template by default
-    addDishTemplate('', 'Main Dish', '', 0);
     
     // Hide notes container
     document.getElementById('notes-container').style.display = 'none';
@@ -390,20 +375,15 @@ function showAddItemModal(eventId) {
     // Show the optional buttons
     document.getElementById('add-notes-btn').style.display = 'flex';
     
-    // Add button for additional dishes - remove previous listeners
+    // Add button for dishes - remove previous listeners
     const addDishBtn = document.getElementById('add-dish-btn');
     const newAddDishBtn = addDishBtn.cloneNode(true);
     addDishBtn.parentNode.replaceChild(newAddDishBtn, addDishBtn);
     
-    // Add new listener with improved experience
+    // Add new listener - always keep the same button text
     newAddDishBtn.addEventListener('click', function() {
         const dishCount = document.querySelectorAll('.dish-container').length;
         addDishTemplate('', 'Main Dish', '', dishCount);
-        
-        // Change button text to "Add Another Item/Dish" after first click
-        if (dishCount === 0) {
-            this.innerHTML = '<i class="fas fa-plus-circle"></i> Add Another Item/Dish';
-        }
     });
     
     // Add event listeners for notes button
@@ -482,13 +462,10 @@ function showEditItemModal(item) {
     const newAddDishBtn = addDishBtn.cloneNode(true);
     addDishBtn.parentNode.replaceChild(newAddDishBtn, addDishBtn);
     
-    // Add new listener
+    // Add new listener with consistent text
     newAddDishBtn.addEventListener('click', function() {
         const dishCount = document.querySelectorAll('.dish-container').length;
         addDishTemplate('', 'Main Dish', '', dishCount);
-        
-        // Change button text
-        this.innerHTML = '<i class="fas fa-plus-circle"></i> Add Another Item/Dish';
     });
     
     // Set up optional field buttons
