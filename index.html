@@ -79,8 +79,8 @@
                     </div>
 
                     <div class="form-checkbox">
-                        <input type="checkbox" id="event-public" checked>
-                        <label for="event-public">This event is public</label>
+                        <input type="checkbox" id="event-private">
+                        <label for="event-private">This event is private</label>
                     </div>
 
                     <p class="form-note">* Required fields</p>
@@ -119,37 +119,26 @@
                     </div>
 
                     <div id="dishes-container">
-                        <!-- Initial dish entry will be added via JavaScript -->
+                        <!-- Dishes will be added dynamically when Add Item/Dish is clicked -->
                     </div>
 
-                    <!-- Add Dish, Notes and Recipe buttons in order -->
+                    <!-- Add Item/Dish button -->
                     <button type="button" id="add-dish-btn" class="add-dish-btn">
-                        <i class="fas fa-plus-circle"></i> Add Another Dish
+                        <i class="fas fa-plus-circle"></i> Add Item/Dish
                     </button>
                     
-                    <button type="button" id="add-notes-btn" class="add-dish-btn">
-                        <i class="fas fa-plus-circle"></i> Add Notes
-                    </button>
-                    
-                    <button type="button" id="add-recipes-btn" class="add-dish-btn">
-                        <i class="fas fa-plus-circle"></i> Add Recipe
-                    </button>
-
-                    <!-- Container for notes field (initially hidden) -->
+                    <!-- Container for notes field -->
                     <div id="notes-container" style="display: none;">
                         <div class="form-group">
                             <label for="item-notes">Notes</label>
                             <textarea id="item-notes" placeholder="Any additional notes..." rows="3"></textarea>
                         </div>
                     </div>
-
-                    <!-- Container for recipes field (initially hidden) -->
-                    <div id="recipes-container" style="display: none;">
-                        <div class="form-group">
-                            <label for="item-recipes">Recipe</label>
-                            <textarea id="item-recipes" placeholder="Share your recipe..." rows="4"></textarea>
-                        </div>
-                    </div>
+                    
+                    <!-- Add Notes button -->
+                    <button type="button" id="add-notes-btn" class="add-dish-btn">
+                        <i class="fas fa-plus-circle"></i> Add Notes
+                    </button>
 
                     <div class="form-actions">
                         <button type="submit" id="save-item-btn" class="btn btn-primary">RSVP for Event</button>
@@ -224,7 +213,7 @@
             <div class="modal-body">
                 <form id="join-event-form">
                     <div class="form-group">
-                        <label for="event-id-input">Event ID*</label>
+                        <label for="event-id-input">Event ID* <span class="join-event-note">Enter the Event ID shared with you to join</span></label>
                         <input type="text" id="event-id-input" placeholder="Enter the Event ID" required>
                     </div>
                     
@@ -234,7 +223,6 @@
                         </button>
                         <button type="button" id="cancel-join-btn" class="btn btn-secondary">Cancel</button>
                     </div>
-                    <p class="form-note">Enter the Event ID shared with you to join</p>
                 </form>
             </div>
         </div>
@@ -276,6 +264,10 @@
                         <i class="fas fa-sms"></i> Text
                     </button>
                 </div>
+                
+                <button id="export-calendar-btn" class="calendar-export-btn">
+                    <i class="fas fa-calendar-alt"></i> Export to Calendar
+                </button>
             </div>
         </div>
     </div>
@@ -339,6 +331,7 @@
     
     <!-- Application Scripts - AFTER Firebase is initialized -->
     <script src="js/utils.js"></script>
+    <script src="js/ad-placeholder.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/items.js"></script>
     <script src="js/events.js"></script>

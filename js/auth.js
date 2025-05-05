@@ -38,7 +38,7 @@ auth.onAuthStateChanged((user) => {
 });
 
 
-// Render login view if not authenticated - Updated with app description
+// Render login view if not authenticated - Updated with app description and sponsor
 function renderLoginView() {
     const mainContent = document.getElementById('main-content');
     
@@ -58,10 +58,18 @@ function renderLoginView() {
                     <i class="fab fa-google"></i> Sign in with Google
                 </button>
                 
-                <!-- Added description text -->
+                <!-- Description text -->
                 <p class="login-description">
                     Organize your event without the confusion of messy text threads. Create events, invite friends, track RSVPs, and organize who's bringing what!
                 </p>
+                
+                <!-- Updated sponsor section with placeholder image -->
+                <div class="login-sponsor">
+                    <p>Sponsored by</p>
+                    <div class="sponsor-logo-container">
+                        <img src="assets/sponsor/sponsor-placeholder.svg" alt="Sponsor" class="sponsor-logo">
+                    </div>
+                </div>
             </div>
         `;
         
@@ -106,36 +114,6 @@ function renderLoginView() {
             
             // Add event listener for sign in
             signInBtn.addEventListener('click', signInWithGoogle);
-        }
-        
-        // Center the login container vertically
-        const loginContainer = document.querySelector('.login-container');
-        if (loginContainer) {
-            loginContainer.style.display = 'flex';
-            loginContainer.style.flexDirection = 'column';
-            loginContainer.style.justifyContent = 'center';
-            loginContainer.style.alignItems = 'center';
-            loginContainer.style.minHeight = '60vh';
-            loginContainer.style.paddingBottom = '3rem';
-            
-            // Make the logo bigger
-            const logo = loginContainer.querySelector('.login-logo');
-            if (logo) {
-                logo.style.width = '100%';
-                logo.style.maxWidth = '500px';
-                logo.style.margin = '0 auto 2rem';
-            }
-            
-            // Style the description text
-            const description = loginContainer.querySelector('.login-description');
-            if (description) {
-                description.style.maxWidth = '90%';
-                description.style.margin = '2rem auto 0';
-                description.style.color = '#6b7280';
-                description.style.lineHeight = '1.5';
-                description.style.fontSize = '1rem';
-                description.style.textAlign = 'center';
-            }
         }
         
         // Ensure the navigation buttons are shown but visibility hidden

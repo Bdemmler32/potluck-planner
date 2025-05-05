@@ -276,7 +276,7 @@ function renderEventListView(eventsData = {}) {
     mainContent.appendChild(createEventBtn);
 }
 
-// Render Event Detail View - UPDATED for consistent container structure
+// Render Event Detail View - UPDATED to use full width layout and remove ad column
 function renderEventDetailView(event) {
     if (!event) return;
     
@@ -304,7 +304,17 @@ function renderEventDetailView(event) {
     shareMessageDiv.textContent = 'Link copied to clipboard!';
     mainContent.appendChild(shareMessageDiv);
     
-    // Event Details Panel - Format date if needed
+    // Create the event page layout container - now a simple block layout
+    const eventPageLayout = document.createElement('div');
+    eventPageLayout.className = 'event-page-layout';
+    mainContent.appendChild(eventPageLayout);
+    
+    // Event Details Column - now spans the full width
+    const eventDetailsColumn = document.createElement('div');
+    eventDetailsColumn.className = 'event-details-column';
+    eventPageLayout.appendChild(eventDetailsColumn);
+    
+    // Format date if needed
     let formattedDate = event.date;
     if (event.date && !event.date.includes('/')) {
         const dateParts = new Date(event.date);
@@ -316,21 +326,20 @@ function renderEventDetailView(event) {
         }
     }
     
+    // Event Details Panel
     const detailsPanel = document.createElement('div');
     detailsPanel.className = 'event-details-panel';
     
     // Add leave event button if user has joined but is not the host
     const isHost = currentUser && event.createdBy === currentUser.uid;
-    const hasJoined = currentUser && !isHost; // Simplified check - we'll use this to show the leave button
+    const hasJoined = currentUser && !isHost; // Simplified check
     
     if (hasJoined) {
         const leaveButton = document.createElement('button');
         leaveButton.className = 'leave-event-btn';
         leaveButton.title = 'Leave Event';
-        // Updated icon to door with arrow
         leaveButton.innerHTML = '<i class="fas fa-sign-out-alt"></i>';
         leaveButton.addEventListener('click', () => {
-            // Call showLeaveEventModal and pass the event ID
             showLeaveEventModal(event.id);
         });
         detailsPanel.appendChild(leaveButton);
@@ -347,7 +356,12 @@ function renderEventDetailView(event) {
         ${event.description ? `<div class="event-detail-row">${event.description}</div>` : ''}
     `;
     
-    mainContent.appendChild(detailsPanel);
+    eventDetailsColumn.appendChild(detailsPanel);
+    
+    // Create a new div for the items section
+    const itemsSection = document.createElement('div');
+    itemsSection.className = 'items-section';
+    mainContent.appendChild(itemsSection);
     
     // Categories for filtering - Added "Other" category
     const categories = ['Appetizer', 'Main Dish', 'Side Dish', 'Dessert', 'Drink', 'Other'];
@@ -371,7 +385,7 @@ function renderEventDetailView(event) {
         filterTabs.appendChild(tab);
     });
     
-    mainContent.appendChild(filterTabs);
+    itemsSection.appendChild(filterTabs);
     
     // Add event listeners to filter tabs
     const tabs = filterTabs.querySelectorAll('.filter-tab');
@@ -388,10 +402,12 @@ function renderEventDetailView(event) {
     const itemsContainer = document.createElement('div');
     itemsContainer.className = 'items-container';
     itemsContainer.id = 'items-container';
-    mainContent.appendChild(itemsContainer);
+    itemsSection.appendChild(itemsContainer);
     
     // Render items
     renderItemsList(event.items || {}, 'All');
+    
+    // The ad space will be added by the ad-placeholder.js after the items section
     
     // Add floating RSVP button (only for non-past events)
     if (!isPastEvent) {
@@ -455,7 +471,7 @@ function showCreateEventModal() {
     // Reset the form
     form.reset();
     document.getElementById('event-id').value = '';
-    document.getElementById('event-public').checked = true; // Default to public
+    document.getElementById('event-private').checked = false; // Default to public (unchecked is public)
     
     // Hide delete button for new events
     deleteBtn.style.display = 'none';
@@ -465,7 +481,7 @@ function showCreateEventModal() {
         document.getElementById('host-name').value = currentUser.name;
     }
     
-// Pre-fill date with today's date and set placeholder
+    // Pre-fill date with today's date and set placeholder
     const today = new Date();
     const formattedDate = today.toISOString().split('T')[0];
     const dateInput = document.getElementById('event-date');
@@ -559,8 +575,8 @@ function showEditEventModal(event) {
     document.getElementById('event-description').value = event.description || '';
     document.getElementById('event-id').value = event.id;
     
-    // Set public checkbox based on event data (default to true if not specified)
-    document.getElementById('event-public').checked = event.isPublic !== false;
+    // Set private checkbox based on event data (default to false if not specified)
+    document.getElementById('event-private').checked = event.isPublic === false;
     
     // Show delete button for own events
     deleteBtn.style.display = 'block';
@@ -583,6 +599,7 @@ function hideEventModal() {
     modal.style.display = 'none';
 }
 
+// Updated for public/private change
 async function handleEventFormSubmit() {
     if (!currentUser) {
         alert('You must be signed in to create or edit an event');
@@ -597,7 +614,7 @@ async function handleEventFormSubmit() {
     const timeInput = document.getElementById('event-time').value;
     const location = document.getElementById('event-location').value;
     const description = document.getElementById('event-description').value;
-    const isPublic = document.getElementById('event-public').checked;
+    const isPrivate = document.getElementById('event-private').checked;
     
     // Validate required fields
     if (!name || !host || !dateInput || !timeInput || !location) {
@@ -626,7 +643,7 @@ async function handleEventFormSubmit() {
         });
     }
     
-    // Prepare event data
+    // Prepare event data - NOTE: isPublic is now the opposite of isPrivate
     const eventData = {
         name,
         host,
@@ -634,7 +651,7 @@ async function handleEventFormSubmit() {
         time,
         location,
         description,
-        isPublic,
+        isPublic: !isPrivate, // Changed from isPublic to !isPrivate
         createdBy: currentUser.uid,
         createdAt: firebase.database.ServerValue.TIMESTAMP
     };
@@ -717,6 +734,220 @@ async function updateEvent(eventId, eventData) {
     }
 }
 
+// Share Modal Functionality - Updated with Calendar Export
+function showShareModal(eventId) {
+    const modal = document.getElementById('share-modal');
+    const eventIdElement = document.getElementById('share-event-id');
+    const eventUrlElement = document.getElementById('share-event-url');
+    const exportCalendarBtn = document.getElementById('export-calendar-btn');
+    
+    // Check if the event is private and if current user is not the host
+    const event = eventDetailData.event;
+    const isHost = currentUser && event && event.createdBy === currentUser.uid;
+    const isPrivate = event && event.isPublic === false;
+
+    // If event is private and user is not host, show message instead
+    if (isPrivate && !isHost) {
+        alert('This is a private event. Sharing options are only available to the host.');
+        return;
+    }
+    
+    // Set event ID and URL
+    const eventUrl = `${window.location.origin}${window.location.pathname}?id=${eventId}`;
+    eventIdElement.textContent = eventId;
+    eventUrlElement.textContent = eventUrl;
+    
+    // Add event listener for calendar export
+    if (exportCalendarBtn) {
+        // Remove previous listeners
+        const newExportBtn = exportCalendarBtn.cloneNode(true);
+        exportCalendarBtn.parentNode.replaceChild(newExportBtn, exportCalendarBtn);
+        
+        // Add event listener
+        newExportBtn.addEventListener('click', function() {
+            generateCalendarFile(eventDetailData.event);
+        });
+    }
+    // Show the modal
+    modal.style.display = 'block';
+}
+
+// Function to generate and download an ICS file
+function generateCalendarFile(event) {
+    // Ensure we have the event data
+    if (!event || !event.name || !event.date || !event.time) {
+        alert('Event information is incomplete. Cannot export to calendar.');
+        return;
+    }
+    
+    // Parse event date and time
+    let startDate = new Date(event.date);
+    
+    // If date is in MM/DD/YYYY format, parse it
+    if (event.date.includes('/')) {
+        const parts = event.date.split('/');
+        const month = parseInt(parts[0]) - 1; // JS months are 0-indexed
+        const day = parseInt(parts[1]);
+        const year = parseInt(parts[2]);
+        startDate = new Date(year, month, day);
+    }
+    
+    // Parse time (e.g., "7:00 PM")
+    const timeMatch = event.time.match(/(\d+):(\d+) ([AP]M)/);
+    if (timeMatch) {
+        let hours = parseInt(timeMatch[1]);
+        const minutes = parseInt(timeMatch[2]);
+        const period = timeMatch[3];
+        
+        // Convert to 24-hour format
+        if (period === 'PM' && hours < 12) {
+            hours += 12;
+        } else if (period === 'AM' && hours === 12) {
+            hours = 0;
+        }
+        
+        startDate.setHours(hours, minutes, 0, 0);
+    }
+    
+    // Set end time (default to 2 hours later)
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+    
+    // Format dates for ICS
+    function formatICSDate(date) {
+        return date.toISOString().replace(/-|:|\.\d+/g, '');
+    }
+    
+    // Create ICS content
+    const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        `SUMMARY:${event.name}`,
+        `DTSTART:${formatICSDate(startDate)}`,
+        `DTEND:${formatICSDate(endDate)}`,
+        `LOCATION:${event.location}`,
+        `DESCRIPTION:${event.description || 'Potluck event organized by ' + event.host}`,
+        `ORGANIZER;CN=${event.host}:mailto:noreply@example.com`,
+        'STATUS:CONFIRMED',
+        'SEQUENCE:0',
+        'END:VEVENT',
+        'END:VCALENDAR'
+    ].join('\r\n');
+    
+    // Create and download the file
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const fileName = `${event.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_calendar.ics`;
+    
+    // Create link and click it to download
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Show success message
+    showToast('Calendar event exported successfully!');
+}
+
+// Hide Share Modal
+function hideShareModal() {
+    const modal = document.getElementById('share-modal');
+    modal.style.display = 'none';
+}
+
+// Copy event ID to clipboard
+function copyEventId() {
+    const eventId = document.getElementById('share-event-id').textContent;
+    navigator.clipboard.writeText(eventId)
+        .then(() => {
+            showToast('Event ID copied to clipboard!');
+        })
+        .catch(err => {
+            console.error('Failed to copy text: ', err);
+        });
+}
+
+// Copy event URL to clipboard
+function copyEventUrl() {
+    const eventUrl = document.getElementById('share-event-url').textContent;
+    navigator.clipboard.writeText(eventUrl)
+        .then(() => {
+            showToast('Event URL copied to clipboard!');
+        })
+        .catch(err => {
+            console.error('Failed to copy text: ', err);
+        });
+}
+
+// Share via email
+function shareViaEmail(eventId, eventName) {
+    const eventUrl = `${window.location.origin}${window.location.pathname}?id=${eventId}`;
+    const subject = `Join my Event: ${eventName}`;
+    const body = `Please join my event by clicking this link: ${eventUrl}\n\nOr use this Event ID: ${eventId}`;
+    
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+// Share via text (SMS)
+function shareViaSMS(eventId, eventName) {
+    const eventUrl = `${window.location.origin}${window.location.pathname}?id=${eventId}`;
+    const message = `Join my event: ${eventName}. Event ID: ${eventId} or use this link: ${eventUrl}`;
+    
+    // For mobile devices
+    if (/Android|iPhone/i.test(navigator.userAgent)) {
+        window.location.href = `sms:?body=${encodeURIComponent(message)}`;
+    } else {
+        // Show a message for desktop users
+        alert('To share via text message, please use a mobile device or copy the Event ID/URL to send manually.');
+    }
+}
+
+// Join event modal functions
+function showJoinEventModal() {
+    const modal = document.getElementById('join-event-modal');
+    const form = document.getElementById('join-event-form');
+    
+    // Reset the form
+    form.reset();
+    
+    // Show the modal
+    modal.style.display = 'block';
+}
+
+function hideJoinEventModal() {
+    const modal = document.getElementById('join-event-modal');
+    modal.style.display = 'none';
+}
+
+// Show Delete Event Confirmation
+function showDeleteEventConfirmation(eventId) {
+    const modal = document.getElementById('confirm-delete-event-modal');
+    document.getElementById('delete-event-id-confirm').value = eventId;
+    modal.style.display = 'block';
+}
+
+// Hide Delete Event Confirmation Modal
+function hideDeleteEventConfirmModal() {
+    const modal = document.getElementById('confirm-delete-event-modal');
+    modal.style.display = 'none';
+}
+
+// Show Leave Event Confirmation
+function showLeaveEventModal(eventId) {
+    const modal = document.getElementById('leave-event-modal');
+    document.getElementById('leave-event-id').value = eventId;
+    modal.style.display = 'block';
+}
+
+// Hide Leave Event Confirmation Modal
+function hideLeaveEventModal() {
+    const modal = document.getElementById('leave-event-modal');
+    modal.style.display = 'none';
+}
+
 // Set up event listeners for communication between files
 document.addEventListener('renderEventList', function(e) {
     renderEventListView(e.detail.events);
@@ -732,3 +963,48 @@ document.addEventListener('showEditEventModal', function(e) {
 });
 document.addEventListener('hideEventModal', hideEventModal);
 document.addEventListener('submitEventForm', handleEventFormSubmit);
+
+// Calendar export functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up event listeners for share and calendar export
+    const exportCalendarBtn = document.getElementById('export-calendar-btn');
+    if (exportCalendarBtn) {
+        exportCalendarBtn.addEventListener('click', function() {
+            if (eventDetailData.event) {
+                generateCalendarFile(eventDetailData.event);
+            } else {
+                alert('Event data is not available. Please try again.');
+            }
+        });
+    }
+    
+    // Copy buttons in share modal
+    const copyIdBtn = document.getElementById('copy-id-btn');
+    const copyUrlBtn = document.getElementById('copy-url-btn');
+    const shareEmailBtn = document.getElementById('share-email-btn');
+    const shareTextBtn = document.getElementById('share-text-btn');
+    
+    if (copyIdBtn) {
+        copyIdBtn.addEventListener('click', copyEventId);
+    }
+    
+    if (copyUrlBtn) {
+        copyUrlBtn.addEventListener('click', copyEventUrl);
+    }
+    
+    if (shareEmailBtn) {
+        shareEmailBtn.addEventListener('click', function() {
+            const eventId = document.getElementById('share-event-id').textContent;
+            const eventName = eventDetailData.event ? eventDetailData.event.name : 'Event';
+            shareViaEmail(eventId, eventName);
+        });
+    }
+    
+    if (shareTextBtn) {
+        shareTextBtn.addEventListener('click', function() {
+            const eventId = document.getElementById('share-event-id').textContent;
+            const eventName = eventDetailData.event ? eventDetailData.event.name : 'Event';
+            shareViaSMS(eventId, eventName);
+        });
+    }
+});
