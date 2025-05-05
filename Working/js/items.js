@@ -56,7 +56,7 @@ function isEventPast(dateStr) {
     return date < tomorrow;
 }
 
-// Create an item card element with new RSVP card layout
+// Create an item card element with improved RSVP card layout
 function createItemCard(item) {
     const card = document.createElement('div');
     card.className = 'item-card';
@@ -79,8 +79,7 @@ function createItemCard(item) {
                     (item.userId === currentUser.uid || 
                      (eventDetailData.event && eventDetailData.event.createdBy === currentUser.uid)));
     
-    // Start building the card HTML
-    // RSVP Header with user photo, name and guest count
+    // Build the card header with user photo, name and guest count on one line
     let cardHTML = `
         <div class="rsvp-header">
             <img src="${item.photoURL || 'assets/default-avatar.png'}" alt="User" class="rsvp-user-photo">
@@ -110,7 +109,7 @@ function createItemCard(item) {
         </div>
     `;
     
-    // Add dishes
+    // Add dishes - each on their own line with recipe icon if applicable
     if (Array.isArray(item.dishes) && item.dishes.length > 0) {
         // Multiple dishes in new format
         item.dishes.forEach((dish, index) => {
@@ -152,7 +151,7 @@ function createItemCard(item) {
     // Notes section (if present)
     if (item.notes) {
         cardHTML += `
-            <div class="notes-content" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f3f4f6;">
+            <div class="notes-content" style="display: none;">
                 <div class="notes-section">
                     <h4>Notes:</h4>
                     <p>${item.notes.split('\n').join('<br>')}</p>
@@ -174,6 +173,13 @@ function createItemCard(item) {
         notesBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             notesContent.style.display = notesContent.style.display === 'none' ? 'block' : 'none';
+            
+            // Update icon color to show active state
+            if (notesContent.style.display === 'block') {
+                notesBtn.querySelector('i').style.color = '#4f46e5';
+            } else {
+                notesBtn.querySelector('i').style.color = '#9ca3af';
+            }
         });
     }
     
@@ -188,6 +194,13 @@ function createItemCard(item) {
             
             if (recipeContent) {
                 recipeContent.style.display = recipeContent.style.display === 'none' ? 'block' : 'none';
+                
+                // Update icon color to show active state
+                if (recipeContent.style.display === 'block') {
+                    icon.style.color = '#4f46e5';
+                } else {
+                    icon.style.color = '';
+                }
             }
         });
     });
@@ -360,7 +373,8 @@ function showAddItemModal(eventId) {
     const dishesContainer = document.getElementById('dishes-container');
     dishesContainer.innerHTML = '';
     
-    // Don't add initial dish template - wait for user to click "Add Item/Dish"
+    // Add at least one dish template by default
+    addDishTemplate('', 'Main Dish', '', 0);
     
     // Hide notes container
     document.getElementById('notes-container').style.display = 'none';
@@ -368,12 +382,12 @@ function showAddItemModal(eventId) {
     // Show the optional buttons
     document.getElementById('add-notes-btn').style.display = 'flex';
     
-    // Add button for dishes - remove previous listeners
+    // Add button for additional dishes - remove previous listeners
     const addDishBtn = document.getElementById('add-dish-btn');
     const newAddDishBtn = addDishBtn.cloneNode(true);
     addDishBtn.parentNode.replaceChild(newAddDishBtn, addDishBtn);
     
-    // Add new listener
+    // Add new listener with improved experience
     newAddDishBtn.addEventListener('click', function() {
         const dishCount = document.querySelectorAll('.dish-container').length;
         addDishTemplate('', 'Main Dish', '', dishCount);

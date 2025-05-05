@@ -1,4 +1,4 @@
-// Dynamic Ad Placeholder System - Updated for any file in assets/ads/ directory
+// Improved Ad Rotation System with fixed ad files
 
 // Define base configuration
 const adConfig = {
@@ -18,55 +18,30 @@ const adConfig = {
     ]
 };
 
-// Array to store available ad images
-let availableAds = [];
+// Specific ad files to use for rotation
+const adFiles = [
+    'assets/ads/ad-placeholder-300x250.svg',
+    'assets/ads/ad-1.jpg',
+    'assets/ads/ad-2.jpg',
+    'assets/ads/ad-3.jpg',
+    'assets/ads/ad-4.jpg'
+];
 
-// Function to load available ads (simulated, as we can't scan directories client-side)
-// In a real implementation, you would need to use server-side code to provide this list
-function loadAvailableAds() {
-    // Simulate available ads in the directory
-    // In a real implementation, this would come from a server endpoint
-    availableAds = [
-        'assets/ads/ad-placeholder-300x250.svg',
-        'assets/ads/ad-1.jpg',
-        'assets/ads/ad-2.jpg',
-        'assets/ads/ad-3.jpg',
-        'assets/ads/ad-4.jpg'
-    ];
-    
-    // Filter to make sure we only have valid files (in a real implementation)
-    availableAds = availableAds.filter(ad => {
-        // Ensure the file exists (this is just a placeholder check)
-        return true;
-    });
-    
-    // If no ads found, use the default placeholder
-    if (availableAds.length === 0) {
-        availableAds = ['assets/ads/ad-placeholder-300x250.svg'];
-    }
-    
-    return availableAds;
-}
+// Current ad index
+let currentAdIndex = 0;
 
-// Get a random ad from available ads
-function getRandomAd() {
-    if (availableAds.length === 0) {
-        loadAvailableAds();
-    }
-    
-    const randomIndex = Math.floor(Math.random() * availableAds.length);
-    return availableAds[randomIndex];
+// Get the next ad in rotation
+function getNextAd() {
+    // Get the next ad and increment the index
+    const adSrc = adFiles[currentAdIndex];
+    currentAdIndex = (currentAdIndex + 1) % adFiles.length;
+    return adSrc;
 }
 
 // Initialize the ad container with properly sized ads
 function initializeAdSpace() {
     const adContainer = document.querySelector('.ad-space-column');
     if (!adContainer) return;
-    
-    // Load available ads if not already loaded
-    if (availableAds.length === 0) {
-        loadAvailableAds();
-    }
     
     // Clear existing ads
     adContainer.innerHTML = '';
@@ -76,21 +51,20 @@ function initializeAdSpace() {
     const ads = isMobile ? adConfig.mobile : adConfig.desktop;
     
     // Add ad slots
-    ads.forEach((ad, index) => {
+    ads.forEach(() => {
         const adElement = document.createElement('div');
         adElement.className = 'ad-container';
         
-        // Select a random ad from available ads
-        const adSrc = getRandomAd();
+        // Select the first ad to start
+        const adSrc = adFiles[0];
         
-        // No advertisement text anymore
         adElement.innerHTML = `
-            <a href="${ad.link}" target="_blank" rel="noopener">
+            <a href="#" target="_blank" rel="noopener">
                 <img 
                     src="${adSrc}" 
                     alt="Advertisement" 
-                    width="${ad.width}" 
-                    height="${ad.height}" 
+                    width="300" 
+                    height="250" 
                     class="ad-placeholder">
             </a>
         `;
@@ -98,7 +72,7 @@ function initializeAdSpace() {
         adContainer.appendChild(adElement);
     });
     
-    // Make the ad container match the height of the event details
+    // Match ad container height to event details
     matchAdHeightToDetails();
 }
 
@@ -118,24 +92,57 @@ function matchAdHeightToDetails() {
 }
 
 // Set up rotation for ads
-function setupAdRotation(interval = 10000) {
-    // Don't set up rotation if there's not enough ads
-    if (availableAds.length <= 1) return;
+function setupAdRotation(interval = 5000) {
+    // Don't set up rotation if there aren't enough ads
+    if (adFiles.length <= 1) return;
     
-    // Set up rotation interval
-    setInterval(() => {
+    // Reset current index
+    currentAdIndex = 0;
+    
+    // Set up rotation interval with a clean implementation
+    const rotationTimer = setInterval(() => {
         const adContainers = document.querySelectorAll('.ad-container');
+        if (adContainers.length === 0) {
+            // No containers found, clear the interval
+            clearInterval(rotationTimer);
+            return;
+        }
         
-        // Update all ad containers with new random ads
+        // Get the next ad
+        const nextAdSrc = getNextAd();
+        
+        // Apply to all ad containers with smooth transition
         adContainers.forEach(container => {
             const img = container.querySelector('img');
             if (img) {
-                // Get a new random ad
-                const adSrc = getRandomAd();
-                img.src = adSrc;
+                // Create new image element and set up transition
+                const newImg = document.createElement('img');
+                newImg.src = nextAdSrc;
+                newImg.alt = "Advertisement";
+                newImg.width = 300;
+                newImg.height = 250;
+                newImg.className = "ad-placeholder";
+                
+                // Use opacity for smooth transition
+                newImg.style.opacity = 0;
+                newImg.style.transition = 'opacity 0.5s ease-in-out';
+                
+                // Replace the old image
+                if (img.parentNode) {
+                    img.parentNode.replaceChild(newImg, img);
+                    
+                    // Trigger reflow
+                    void newImg.offsetWidth;
+                    
+                    // Fade in
+                    newImg.style.opacity = 1;
+                }
             }
         });
     }, interval);
+    
+    // Store the timer ID for cleanup
+    window.adRotationTimer = rotationTimer;
 }
 
 // Handle window resize to adjust ads
@@ -145,20 +152,24 @@ function handleResize() {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Load available ads
-    loadAvailableAds();
-    
     // Initial setup
     window.addEventListener('resize', handleResize);
 });
 
 // Listen for event detail view rendered to initialize ads
 document.addEventListener('eventDetailRendered', function() {
+    // Clear any existing rotation timer
+    if (window.adRotationTimer) {
+        clearInterval(window.adRotationTimer);
+        window.adRotationTimer = null;
+    }
+    
+    // Initialize ad space with slight delay to ensure DOM is ready
     setTimeout(() => {
         initializeAdSpace();
         // Set up rotation after initializing
         setupAdRotation();
-    }, 100);
+    }, 200);
     
     // Listen for any changes in the DOM that might affect heights
     const observer = new MutationObserver(() => {

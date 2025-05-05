@@ -398,7 +398,7 @@ p {
     margin-bottom: 1.5rem;
 }
 
-/* Ad Space Styles - UPDATED */
+/* Ad Space Styles - COMPLETELY REVISED */
 .event-page-layout {
     display: flex;
     flex-wrap: wrap;
@@ -413,9 +413,10 @@ p {
 
 .ad-space-column {
     width: 300px;
+    /* Removed border-left completely */
 }
 
-/* Updated ad container to match event details height and remove header */
+/* Updated ad container to match event details height and improve containment */
 .ad-container {
     background-color: white;
     border-radius: 0.5rem;
@@ -426,6 +427,7 @@ p {
     align-items: center;
     justify-content: center;
     height: 100%; /* Match height of details panel */
+    overflow: hidden; /* Prevent image overflow */
 }
 
 /* Remove ad header text */
@@ -437,15 +439,16 @@ p {
     max-width: 100%;
     height: auto;
     display: block;
+    transition: opacity 0.5s ease-in-out; /* Smooth transitions */
 }
 
-/* RSVP Card Styles */
+/* RSVP Card Styles - COMPLETELY REDESIGNED */
 .item-card {
     background-color: white;
     border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
-    padding: 1rem;
-    margin-bottom: 0.5rem;
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
 }
 
 .rsvp-header {
@@ -455,15 +458,18 @@ p {
 }
 
 .rsvp-user-photo {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    margin-right: 0.75rem;
+    margin-right: 0.875rem;
     object-fit: cover;
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 .rsvp-user-info {
     flex: 1;
+    display: flex;
+    align-items: center;
 }
 
 .rsvp-user-name {
@@ -471,6 +477,10 @@ p {
     color: #1f2937;
     display: flex;
     align-items: center;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .rsvp-guest-badge {
@@ -482,6 +492,7 @@ p {
     margin-left: 0.5rem;
     display: inline-flex;
     align-items: center;
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 .rsvp-guest-badge i {
@@ -492,17 +503,22 @@ p {
     display: flex;
     align-items: center;
     margin-bottom: 0.5rem;
-    padding-left: 0.5rem;
+    padding: 0.25rem 0;
 }
 
 .rsvp-item-name {
     flex: 1;
     font-weight: normal;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 0.5rem;
 }
 
 .clickable-category {
     cursor: pointer;
     transition: transform 0.1s;
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 .clickable-category:hover {
@@ -514,6 +530,7 @@ p {
     margin-left: 0.5rem;
     cursor: pointer;
     transition: color 0.3s;
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 .recipe-icon:hover {
@@ -524,83 +541,32 @@ p {
     background-color: #f9fafb;
     border-radius: 0.25rem;
     padding: 0.75rem;
-    margin: 0.25rem 0 0.75rem 1.5rem;
+    margin: 0.25rem 0 0.75rem 0;
     font-size: 0.875rem;
     border-left: 2px solid #e5e7eb;
     display: none;
 }
 
-/* Updated Item Card Styling - For new layout */
-.item-card {
-    background-color: white;
-    border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
-    padding: 1rem;
-    margin-bottom: 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.item-info {
-    flex: 1;
-}
-
-.item-info h3 {
-    font-weight: 500;
-    color: #1f2937;
-    margin-bottom: 0.25rem;
-}
-
-.person-name {
-    margin-bottom: 0.25rem;
-    color: #4b5563;
-}
-
-.item-details {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.25rem;
-}
-
-.category-badge {
-    background-color: #dbeafe;
-    color: #1e40af;
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-}
-
-.guest-count-badge {
-    background-color: #e0e7ff;
-    color: #3730a3;
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    display: flex;
-    align-items: center;
-}
-
-.guest-count-badge i {
-    margin-right: 0.25rem;
-}
-
+/* Improved item actions section */
 .item-actions {
     display: flex;
     align-items: center;
     gap: 0.5rem; /* Consistent spacing between icons */
+    margin-left: 0.5rem;
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 .item-action-btn {
     background: none;
     border: none;
     color: #9ca3af;
-    font-size: 1rem;
+    font-size: 1.125rem;
     cursor: pointer;
     transition: color 0.3s;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Make notes icon same color as other icons initially */
@@ -1245,7 +1211,7 @@ body:not(.login-page) .app-footer {
     to { opacity: 0; bottom: 0; }
 }
 
-/* Responsive Adjustments */
+/* Responsive Adjustments - UPDATED FOR BETTER MOBILE EXPERIENCE */
 @media (max-width: 768px) {
     :root {
         --gutter-sm: 1rem;
@@ -1315,25 +1281,49 @@ body:not(.login-page) .app-footer {
         margin-bottom: 0.5rem;
     }
     
-    /* Mobile responsive ad space */
-    .ad-space-column {
-        width: 100%;
-        order: 3; /* Changed to place after RSVP section */
+    /* Mobile responsive layout and ordering - FIXED */
+    /* Update for proper ordering of elements on mobile */
+    .event-page-layout {
+        flex-direction: column;
     }
     
     .event-details-column {
         width: 100%;
-        order: 1;
+        order: 1; /* First in order */
     }
     
-    /* Make items section appear before ads in mobile */
     .items-section {
-        order: 2;
+        order: 2; /* Second in order */
+        width: 100%;
+    }
+    
+    .ad-space-column {
+        width: 100%;
+        order: 3; /* Last - after RSVP cards */
+    }
+    
+    /* Adjust spacing for RSVP cards on mobile */
+    .rsvp-user-info {
+        max-width: calc(100% - 50px); /* Account for photo width + margin */
+    }
+    
+    .rsvp-header {
+        flex-wrap: wrap;
+    }
+    
+    .item-actions {
+        margin-left: auto;
     }
     
     .sponsor-logo-container {
         width: 150px;
         height: 50px;
+    }
+    
+    /* Improve recipe content and notes on mobile */
+    .recipe-content, .notes-content {
+        margin-left: 0;
+        width: 100%;
     }
 }
 
@@ -1379,4 +1369,16 @@ body:not(.login-page) .app-footer {
 
 #sign-out-btn:hover {
     cursor: pointer;
+}
+
+/* Category Badge Styling - Added for better appearance */
+.category-badge {
+    background-color: #dbeafe;
+    color: #1e40af;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    margin-right: 0.5rem;
+    display: inline-flex;
+    align-items: center;
 }

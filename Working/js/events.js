@@ -276,7 +276,7 @@ function renderEventListView(eventsData = {}) {
     mainContent.appendChild(createEventBtn);
 }
 
-// Render Event Detail View - UPDATED for two-column layout with ad space
+// Render Event Detail View - UPDATED for two-column layout with ad space and mobile reordering
 function renderEventDetailView(event) {
     if (!event) return;
     
@@ -314,7 +314,7 @@ function renderEventDetailView(event) {
     eventDetailsColumn.className = 'event-details-column';
     eventPageLayout.appendChild(eventDetailsColumn);
     
-    // Ad Space Column
+    // Ad Space Column - Moved to appear after items in mobile view via CSS
     const adSpaceColumn = document.createElement('div');
     adSpaceColumn.className = 'ad-space-column';
     adSpaceColumn.innerHTML = `
