@@ -94,7 +94,7 @@ function createItemCard(item) {
             <div class="item-actions">
                 ${item.notes ? `
                     <button class="item-action-btn notes-btn" title="View Notes">
-                        <i class="fas fa-sticky-note"></i>
+                        <i class="fas fa-file-alt"></i>
                     </button>
                 ` : ''}
                 ${canEdit ? `
@@ -116,15 +116,19 @@ function createItemCard(item) {
             if (dish.name && dish.category) {
                 cardHTML += `
                     <div class="rsvp-item" data-dish-index="${index}">
+                        <i class="fas fa-utensils rsvp-item-icon"></i>
                         <div class="rsvp-item-name">${dish.name}</div>
                         <span class="category-badge clickable-category" data-category="${dish.category}">${dish.category}</span>
                         ${dish.recipe ? `
-                            <i class="fas fa-book recipe-icon" title="View Recipe"></i>
+                            <i class="fas fa-file-signature recipe-icon" title="View Recipe"></i>
                         ` : ''}
                     </div>
                     ${dish.recipe ? `
                         <div class="recipe-content" data-dish-index="${index}" style="display: none;">
-                            <p>${dish.recipe.split('\n').join('<br>')}</p>
+                            <div class="recipes-section">
+                                <h4><i class="fas fa-file-signature"></i> Recipe:</h4>
+                                <p>${dish.recipe.split('\n').join('<br>')}</p>
+                            </div>
                         </div>
                     ` : ''}
                 `;
@@ -134,15 +138,19 @@ function createItemCard(item) {
         // Single dish (old format)
         cardHTML += `
             <div class="rsvp-item" data-dish-index="0">
+                <i class="fas fa-utensils rsvp-item-icon"></i>
                 <div class="rsvp-item-name">${item.name}</div>
                 <span class="category-badge clickable-category" data-category="${item.category}">${item.category}</span>
                 ${item.recipes ? `
-                    <i class="fas fa-book recipe-icon" title="View Recipe"></i>
+                    <i class="fas fa-file-signature recipe-icon" title="View Recipe"></i>
                 ` : ''}
             </div>
             ${item.recipes ? `
                 <div class="recipe-content" data-dish-index="0" style="display: none;">
-                    <p>${item.recipes.split('\n').join('<br>')}</p>
+                    <div class="recipes-section">
+                        <h4><i class="fas fa-file-signature"></i> Recipe:</h4>
+                        <p>${item.recipes.split('\n').join('<br>')}</p>
+                    </div>
                 </div>
             ` : ''}
         `;
@@ -153,7 +161,7 @@ function createItemCard(item) {
         cardHTML += `
             <div class="notes-content" style="display: none;">
                 <div class="notes-section">
-                    <h4>Notes:</h4>
+                    <h4><i class="fas fa-file-alt"></i> Notes:</h4>
                     <p>${item.notes.split('\n').join('<br>')}</p>
                 </div>
             </div>

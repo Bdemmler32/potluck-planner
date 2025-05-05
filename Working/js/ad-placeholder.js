@@ -1,191 +1,176 @@
-// Improved Ad Rotation System with fixed ad files
+// Completely Reworked Ad Rotation System
 
-// Define base configuration
+// Define ad configuration
 const adConfig = {
-    desktop: [
+    // Specific ad files to use for rotation
+    adFiles: [
         {
-            width: 300,
-            height: 250,
-            link: '#'
+            src: 'assets/ads/ad-placeholder-300x250.svg',
+            link: 'https://example.com/ad1',
+            alt: 'Advertisement 1'
+        },
+        {
+            src: 'assets/ads/ad-placeholder-300x250_2.svg',
+            link: 'https://example.com/ad2',
+            alt: 'Advertisement 2'
+        },
+        {
+            src: 'assets/ads/ad-placeholder-300x250_3.svg',
+            link: 'https://example.com/ad3',
+            alt: 'Advertisement 3'
         }
     ],
-    mobile: [
-        {
-            width: 300,
-            height: 250,
-            link: '#'
-        }
-    ]
+    // Rotation interval in milliseconds (30 seconds)
+    rotationInterval: 30000
 };
-
-// Specific ad files to use for rotation
-const adFiles = [
-    'assets/ads/ad-placeholder-300x250.svg',
-    'assets/ads/ad-1.jpg',
-    'assets/ads/ad-2.jpg',
-    'assets/ads/ad-3.jpg',
-    'assets/ads/ad-4.jpg'
-];
 
 // Current ad index
 let currentAdIndex = 0;
+let rotationTimer = null;
 
-// Get the next ad in rotation
-function getNextAd() {
-    // Get the next ad and increment the index
-    const adSrc = adFiles[currentAdIndex];
-    currentAdIndex = (currentAdIndex + 1) % adFiles.length;
-    return adSrc;
+// Initialize the ad container
+function initializeAdSpace() {
+    // Check if we're on the event detail page
+    if (currentView !== 'eventDetail') return;
+    
+    // Find main content container
+    const mainContent = document.getElementById('main-content');
+    if (!mainContent) return;
+    
+    // Find the items-section
+    const itemsSection = mainContent.querySelector('.items-section');
+    if (!itemsSection) return;
+    
+    // Create ad space container if it doesn't exist
+    let adSpaceContainer = mainContent.querySelector('.ad-space-container');
+    
+    if (!adSpaceContainer) {
+        adSpaceContainer = document.createElement('div');
+        adSpaceContainer.className = 'ad-space-container';
+        
+        // Create ad container
+        const adContainer = document.createElement('div');
+        adContainer.className = 'ad-container';
+        
+        // Insert the ad container into the ad space
+        adSpaceContainer.appendChild(adContainer);
+        
+        // Insert the ad space after the items section
+        itemsSection.after(adSpaceContainer);
+    }
+    
+    // Set initial ad
+    updateAd(0);
+    
+    // Start rotation
+    startAdRotation();
 }
 
-// Initialize the ad container with properly sized ads
-function initializeAdSpace() {
-    const adContainer = document.querySelector('.ad-space-column');
+// Update the ad with the specified index
+function updateAd(index) {
+    const adContainer = document.querySelector('.ad-container');
     if (!adContainer) return;
     
-    // Clear existing ads
+    // Get the ad data
+    const ad = adConfig.adFiles[index];
+    
+    // Create link element
+    const link = document.createElement('a');
+    link.href = ad.link;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    
+    // Create image element
+    const img = document.createElement('img');
+    img.src = ad.src;
+    img.alt = ad.alt;
+    img.width = 300;
+    img.height = 250;
+    img.className = 'ad-placeholder';
+    
+    // Apply a fade effect
+    img.style.opacity = '0';
+    
+    // Add image to link
+    link.appendChild(img);
+    
+    // Clear ad container
     adContainer.innerHTML = '';
     
-    // Determine if we're on mobile
-    const isMobile = window.innerWidth <= 768;
-    const ads = isMobile ? adConfig.mobile : adConfig.desktop;
+    // Add link to ad container
+    adContainer.appendChild(link);
     
-    // Add ad slots
-    ads.forEach(() => {
-        const adElement = document.createElement('div');
-        adElement.className = 'ad-container';
-        
-        // Select the first ad to start
-        const adSrc = adFiles[0];
-        
-        adElement.innerHTML = `
-            <a href="#" target="_blank" rel="noopener">
-                <img 
-                    src="${adSrc}" 
-                    alt="Advertisement" 
-                    width="300" 
-                    height="250" 
-                    class="ad-placeholder">
-            </a>
-        `;
-        
-        adContainer.appendChild(adElement);
-    });
+    // Trigger reflow
+    void img.offsetWidth;
     
-    // Match ad container height to event details
-    matchAdHeightToDetails();
+    // Fade in
+    img.style.opacity = '1';
+    
+    // Update current index
+    currentAdIndex = index;
 }
 
-// Match ad container height to event details container
-function matchAdHeightToDetails() {
-    const detailsPanel = document.querySelector('.event-details-panel');
-    const adContainer = document.querySelector('.ad-container');
+// Start ad rotation
+function startAdRotation() {
+    // Clear existing timer if any
+    if (rotationTimer) {
+        clearInterval(rotationTimer);
+    }
     
-    if (detailsPanel && adContainer && window.innerWidth > 768) {
-        // Get computed height of details panel
-        const detailsHeight = detailsPanel.offsetHeight;
-        adContainer.style.height = `${detailsHeight}px`;
-    } else if (adContainer) {
-        // Reset height on mobile
-        adContainer.style.height = 'auto';
+    // Set up rotation timer
+    rotationTimer = setInterval(() => {
+        // Calculate next ad index
+        const nextIndex = (currentAdIndex + 1) % adConfig.adFiles.length;
+        
+        // Update ad
+        updateAd(nextIndex);
+    }, adConfig.rotationInterval);
+}
+
+// Stop ad rotation
+function stopAdRotation() {
+    if (rotationTimer) {
+        clearInterval(rotationTimer);
+        rotationTimer = null;
     }
 }
 
-// Set up rotation for ads
-function setupAdRotation(interval = 5000) {
-    // Don't set up rotation if there aren't enough ads
-    if (adFiles.length <= 1) return;
-    
-    // Reset current index
-    currentAdIndex = 0;
-    
-    // Set up rotation interval with a clean implementation
-    const rotationTimer = setInterval(() => {
-        const adContainers = document.querySelectorAll('.ad-container');
-        if (adContainers.length === 0) {
-            // No containers found, clear the interval
-            clearInterval(rotationTimer);
-            return;
-        }
-        
-        // Get the next ad
-        const nextAdSrc = getNextAd();
-        
-        // Apply to all ad containers with smooth transition
-        adContainers.forEach(container => {
-            const img = container.querySelector('img');
-            if (img) {
-                // Create new image element and set up transition
-                const newImg = document.createElement('img');
-                newImg.src = nextAdSrc;
-                newImg.alt = "Advertisement";
-                newImg.width = 300;
-                newImg.height = 250;
-                newImg.className = "ad-placeholder";
-                
-                // Use opacity for smooth transition
-                newImg.style.opacity = 0;
-                newImg.style.transition = 'opacity 0.5s ease-in-out';
-                
-                // Replace the old image
-                if (img.parentNode) {
-                    img.parentNode.replaceChild(newImg, img);
-                    
-                    // Trigger reflow
-                    void newImg.offsetWidth;
-                    
-                    // Fade in
-                    newImg.style.opacity = 1;
-                }
-            }
-        });
-    }, interval);
-    
-    // Store the timer ID for cleanup
-    window.adRotationTimer = rotationTimer;
-}
-
-// Handle window resize to adjust ads
-function handleResize() {
-    initializeAdSpace();
+// Clean up when leaving the page
+function cleanUp() {
+    stopAdRotation();
 }
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Initial setup
-    window.addEventListener('resize', handleResize);
+    // We'll initialize on the event detail rendered event
 });
 
-// Listen for event detail view rendered to initialize ads
+// Listen for event detail view rendered
 document.addEventListener('eventDetailRendered', function() {
-    // Clear any existing rotation timer
-    if (window.adRotationTimer) {
-        clearInterval(window.adRotationTimer);
-        window.adRotationTimer = null;
-    }
-    
-    // Initialize ad space with slight delay to ensure DOM is ready
+    // Add a small delay to ensure DOM is fully rendered
     setTimeout(() => {
         initializeAdSpace();
-        // Set up rotation after initializing
-        setupAdRotation();
     }, 200);
-    
-    // Listen for any changes in the DOM that might affect heights
-    const observer = new MutationObserver(() => {
-        matchAdHeightToDetails();
-    });
-    
-    // Start observing the main content
-    const mainContent = document.getElementById('main-content');
-    if (mainContent) {
-        observer.observe(mainContent, { childList: true, subtree: true });
+});
+
+// Clean up when leaving event detail view
+document.addEventListener('navigateToList', function() {
+    cleanUp();
+});
+
+// Listen for window resize to adjust ads
+window.addEventListener('resize', function() {
+    // Check if we're on event detail page
+    if (currentView === 'eventDetail') {
+        // Reinitialize ad space
+        initializeAdSpace();
     }
 });
 
 // Export functions for external use
 window.adSystem = {
     initialize: initializeAdSpace,
-    setupRotation: setupAdRotation,
-    matchHeights: matchAdHeightToDetails
+    startRotation: startAdRotation,
+    stopRotation: stopAdRotation,
+    updateAd: updateAd
 };

@@ -276,7 +276,7 @@ function renderEventListView(eventsData = {}) {
     mainContent.appendChild(createEventBtn);
 }
 
-// Render Event Detail View - UPDATED for two-column layout with ad space and mobile reordering
+// Render Event Detail View - UPDATED to use full width layout and remove ad column
 function renderEventDetailView(event) {
     if (!event) return;
     
@@ -304,26 +304,15 @@ function renderEventDetailView(event) {
     shareMessageDiv.textContent = 'Link copied to clipboard!';
     mainContent.appendChild(shareMessageDiv);
     
-    // Create the two-column layout container
+    // Create the event page layout container - now a simple block layout
     const eventPageLayout = document.createElement('div');
     eventPageLayout.className = 'event-page-layout';
     mainContent.appendChild(eventPageLayout);
     
-    // Event Details Column
+    // Event Details Column - now spans the full width
     const eventDetailsColumn = document.createElement('div');
     eventDetailsColumn.className = 'event-details-column';
     eventPageLayout.appendChild(eventDetailsColumn);
-    
-    // Ad Space Column - Moved to appear after items in mobile view via CSS
-    const adSpaceColumn = document.createElement('div');
-    adSpaceColumn.className = 'ad-space-column';
-    adSpaceColumn.innerHTML = `
-        <div class="ad-container">
-            <!-- No advertisement header anymore -->
-            <img src="assets/ads/ad-placeholder-300x250.svg" alt="Advertisement" class="ad-placeholder">
-        </div>
-    `;
-    eventPageLayout.appendChild(adSpaceColumn);
     
     // Format date if needed
     let formattedDate = event.date;
@@ -369,7 +358,7 @@ function renderEventDetailView(event) {
     
     eventDetailsColumn.appendChild(detailsPanel);
     
-    // Create a new div for the items section with a specific class for mobile ordering
+    // Create a new div for the items section
     const itemsSection = document.createElement('div');
     itemsSection.className = 'items-section';
     mainContent.appendChild(itemsSection);
@@ -418,6 +407,8 @@ function renderEventDetailView(event) {
     // Render items
     renderItemsList(event.items || {}, 'All');
     
+    // The ad space will be added by the ad-placeholder.js after the items section
+    
     // Add floating RSVP button (only for non-past events)
     if (!isPastEvent) {
         const addItemBtn = document.createElement('button');
@@ -441,11 +432,6 @@ function renderEventDetailView(event) {
         }
         
         mainContent.appendChild(addItemBtn);
-    }
-    
-    // Initialize ad space if ad system is loaded
-    if (window.adSystem && typeof window.adSystem.initialize === 'function') {
-        window.adSystem.initialize();
     }
     
     // Notify that event detail is rendered
