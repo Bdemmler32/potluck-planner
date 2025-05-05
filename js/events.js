@@ -182,7 +182,7 @@ function countItemsByCategory(items, category) {
     return count;
 }
 
-// Render Event List View - Updated to remove "Potluck" references
+// Render Event List View - UPDATED for consistent container structure
 function renderEventListView(eventsData = {}) {
     const mainContent = document.getElementById('main-content');
     mainContent.innerHTML = '';
@@ -276,7 +276,7 @@ function renderEventListView(eventsData = {}) {
     mainContent.appendChild(createEventBtn);
 }
 
-// Render Event Detail View - Updated with new leave button icon
+// Render Event Detail View - UPDATED for consistent container structure
 function renderEventDetailView(event) {
     if (!event) return;
     
@@ -417,6 +417,9 @@ function renderEventDetailView(event) {
         
         mainContent.appendChild(addItemBtn);
     }
+    
+    // Notify that event detail is rendered
+    document.dispatchEvent(new Event('eventDetailRendered'));
 }
 
 // Filter items by category
@@ -462,7 +465,7 @@ function showCreateEventModal() {
         document.getElementById('host-name').value = currentUser.name;
     }
     
-    // Pre-fill date with today's date and set placeholder
+// Pre-fill date with today's date and set placeholder
     const today = new Date();
     const formattedDate = today.toISOString().split('T')[0];
     const dateInput = document.getElementById('event-date');
@@ -482,6 +485,11 @@ function showCreateEventModal() {
     
     // Scroll to top
     window.scrollTo(0, 0);
+    
+    // Notify that modal has been opened
+    document.dispatchEvent(new CustomEvent('modalOpened', {
+        detail: { modalId: 'event-modal' }
+    }));
 }
 
 function showEditEventModal(event) {
@@ -563,6 +571,11 @@ function showEditEventModal(event) {
     
     // Show the modal
     modal.style.display = 'block';
+    
+    // Notify that modal has been opened
+    document.dispatchEvent(new CustomEvent('modalOpened', {
+        detail: { modalId: 'event-modal' }
+    }));
 }
 
 function hideEventModal() {
