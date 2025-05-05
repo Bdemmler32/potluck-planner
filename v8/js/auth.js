@@ -1,0 +1,373 @@
+// Get references to Firebase auth (initialized in index.html)
+const auth = firebase.auth();
+const provider = new firebase.auth.GoogleAuthProvider();
+
+// Current user data
+let currentUser = null;
+
+// Check auth state
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        // User is signed in
+        currentUser = {
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL
+        };
+        
+        // Save user to database if new
+        saveUserToDatabase(currentUser);
+        
+        // Update UI for authenticated user
+        updateAuthUI(true);
+        
+        // Load user's events (both hosted and joined)
+        loadUserEvents(currentUser.uid);
+    } else {
+        // User is signed out
+        currentUser = null;
+        updateAuthUI(false);
+        
+        // Show login view if on main page
+        renderLoginView();
+    }
+});
+
+// Render login view if not authenticated - Updated for new design
+function renderLoginView() {
+    const mainContent = document.getElementById('main-content');
+    
+    // Only render login view if we're on the main page (event list)
+    if (currentView === 'eventList') {
+        // Add login-page class to body
+        document.body.classList.add('login-page');
+        
+        mainContent.innerHTML = `
+            <div class="login-container">
+                <h1 class="login-title">Welcome</h1>
+                <div class="login-logo">
+                    <img src="assets/logo-4f46e5.png" alt="Event Planner">
+                </div>
+                
+                <button id="login-google-btn" class="btn btn-primary google-btn">
+                    <i class="fab fa-google"></i> Sign in with Google
+                </button>
+            </div>
+        `;
+        
+        // Add event listener to sign in button
+        const signInBtn = document.getElementById('login-google-btn');
+        if (signInBtn) {
+            signInBtn.addEventListener('click', signInWithGoogle);
+        }
+    }
+}
+
+// Save user to database
+function saveUserToDatabase(user) {
+    const userRef = database.ref(`users/${user.uid}`);
+    
+    // Update user data without overwriting events
+    userRef.once('value', (snapshot) => {
+        const userData = snapshot.val() || {};
+        
+        userRef.update({
+            name: user.name,
+            email: user.email,
+            photoURL: user.photoURL,
+            lastLogin: firebase.database.ServerValue.TIMESTAMP,
+            // Keep existing hostedEvents and joinedEvents if they exist
+            hostedEvents: userData.hostedEvents || {},
+            joinedEvents: userData.joinedEvents || {}
+        });
+    });
+}
+
+// Sign in with Google
+function signInWithGoogle() {
+    auth.signInWithPopup(provider)
+        .catch((error) => {
+            console.error('Error signing in:', error);
+            alert('Failed to sign in. Please try again.');
+        });
+}
+
+// Sign out - Updated to refresh page after sign out
+function signOut() {
+    auth.signOut()
+        .then(() => {
+            // Reload the page to reset everything
+            window.location.reload();
+        })
+        .catch((error) => {
+            console.error('Error signing out:', error);
+        });
+}
+
+// Update UI based on auth state
+function updateAuthUI(isAuthenticated) {
+    // Remove login-page class if authenticated
+    if (isAuthenticated) {
+        document.body.classList.remove('login-page');
+    } else {
+        document.body.classList.add('login-page');
+    }
+    
+    const authButton = document.getElementById('auth-button');
+    const userAvatar = document.getElementById('user-avatar');
+    
+    if (isAuthenticated && currentUser) {
+        // Update user avatar and name
+        if (userAvatar) {
+            userAvatar.src = currentUser.photoURL || 'assets/default-avatar.png';
+            userAvatar.style.display = 'block';
+        }
+        
+        // Update auth button text
+        if (authButton) {
+            authButton.innerHTML = '<i class="fas fa-user"></i>';
+            authButton.title = 'User Profile';
+        }
+        
+        // If we're on the main view, reload events
+        if (currentView === 'eventList') {
+            loadUserEvents(currentUser.uid);
+        }
+    } else {
+        // Reset UI for non-authenticated user
+        if (userAvatar) {
+            userAvatar.style.display = 'none';
+        }
+        
+        if (authButton) {
+            authButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+            authButton.title = 'Sign In';
+        }
+        
+        // Show login view if on main page
+        if (currentView === 'eventList') {
+            renderLoginView();
+        }
+    }
+}
+
+// Load user's events (both hosted and joined)
+function loadUserEvents(userId) {
+    const userRef = database.ref(`users/${userId}`);
+    
+    userRef.once('value', (snapshot) => {
+        const userData = snapshot.val() || {};
+        const hostedEvents = userData.hostedEvents || {};
+        const joinedEvents = userData.joinedEvents || {};
+        
+        // Combine hosted and joined event IDs
+        const allEventIds = [...Object.keys(hostedEvents), ...Object.keys(joinedEvents)];
+        
+        // Load these events from the database
+        if (allEventIds.length > 0) {
+            fetchUserEvents(allEventIds);
+        } else {
+            // No events to load, show empty state
+            document.dispatchEvent(new CustomEvent('eventsLoaded', { 
+                detail: { events: {} }
+            }));
+        }
+    });
+}
+
+// Fetch events by IDs
+function fetchUserEvents(eventIds) {
+    if (eventIds.length === 0) {
+        // No events to load, show empty state
+        document.dispatchEvent(new CustomEvent('eventsLoaded', { 
+            detail: { events: {} }
+        }));
+        return;
+    }
+    
+    const eventsRef = database.ref('events');
+    const userEvents = {};
+    
+    // Create a promise for each event
+    const promises = eventIds.map(eventId => {
+        return eventsRef.child(eventId).once('value')
+            .then((snapshot) => {
+                const eventData = snapshot.val();
+                if (eventData) {
+                    userEvents[eventId] = {
+                        ...eventData,
+                        id: eventId // Add ID to the event data
+                    };
+                }
+            });
+    });
+    
+    // When all promises resolve, dispatch the events
+    Promise.all(promises)
+        .then(() => {
+            document.dispatchEvent(new CustomEvent('eventsLoaded', { 
+                detail: { events: userEvents }
+            }));
+        })
+        .catch(error => {
+            console.error('Error fetching events:', error);
+        });
+}
+
+// Join an event by ID
+async function joinEvent(eventId) {
+    if (!currentUser) {
+        alert('You must be signed in to join an event.');
+        return false;
+    }
+    
+    try {
+        // Validate if the event exists
+        const eventSnapshot = await database.ref(`events/${eventId}`).once('value');
+        if (!eventSnapshot.exists()) {
+            alert('Event not found. Please check the ID and try again.');
+            return false;
+        }
+        
+        // Check if already joined
+        const userRef = database.ref(`users/${currentUser.uid}/joinedEvents/${eventId}`);
+        const joined = await userRef.once('value');
+        
+        if (joined.exists()) {
+            // Already joined, just navigate to it
+            document.dispatchEvent(new CustomEvent('navigateToDetail', { 
+                detail: { eventId: eventId }
+            }));
+            return true;
+        }
+        
+        // Add this event to the user's joined events
+        await userRef.set(true);
+        
+        // Navigate to the event detail
+        document.dispatchEvent(new CustomEvent('navigateToDetail', { 
+            detail: { eventId: eventId }
+        }));
+        
+        return true;
+    } catch (error) {
+        console.error('Error joining event:', error);
+        alert('Failed to join event. Please try again.');
+        return false;
+    }
+}
+
+// Leave an event - Updated to remove user's items too
+async function leaveEvent(eventId) {
+    if (!currentUser) return false;
+    
+    try {
+        // Remove all the user's items from the event
+        const eventItemsRef = database.ref(`events/${eventId}/items`);
+        const items = await eventItemsRef.once('value');
+        const itemsData = items.val() || {};
+        
+        // Find and remove all items belonging to the current user
+        const userItemsPromises = Object.entries(itemsData).map(([itemId, item]) => {
+            if (item.userId === currentUser.uid) {
+                return eventItemsRef.child(itemId).remove();
+            }
+            return Promise.resolve();
+        });
+        
+        // Wait for all user items to be removed
+        await Promise.all(userItemsPromises);
+        
+        // Remove from joined events
+        await database.ref(`users/${currentUser.uid}/joinedEvents/${eventId}`).remove();
+        
+        // Show success message
+        showToast('You have left the event.');
+        
+        // Navigate back to the event list
+        document.dispatchEvent(new Event('navigateToList'));
+        
+        return true;
+    } catch (error) {
+        console.error('Error leaving event:', error);
+        alert('Failed to leave the event. Please try again.');
+        return false;
+    }
+}
+
+// Check if user is the host of an event
+function isEventHost(event) {
+    return currentUser && event && event.createdBy === currentUser.uid;
+}
+
+// Check if user has joined an event
+async function hasJoinedEvent(eventId) {
+    if (!currentUser) return false;
+    
+    try {
+        const joined = await database.ref(`users/${currentUser.uid}/joinedEvents/${eventId}`).once('value');
+        return joined.exists();
+    } catch (error) {
+        console.error('Error checking if joined event:', error);
+        return false;
+    }
+}
+
+// Show user profile modal
+function showUserProfileModal() {
+    const modal = document.getElementById('user-modal');
+    
+    if (currentUser) {
+        // User is signed in - show profile
+        document.getElementById('user-name').textContent = currentUser.name;
+        document.getElementById('user-email').textContent = currentUser.email;
+        document.getElementById('user-photo').src = currentUser.photoURL || 'assets/default-avatar.png';
+        
+        // Show sign out button
+        document.getElementById('sign-in-section').style.display = 'none';
+        document.getElementById('user-profile-section').style.display = 'block';
+    } else {
+        // User is not signed in - show sign in options
+        document.getElementById('sign-in-section').style.display = 'block';
+        document.getElementById('user-profile-section').style.display = 'none';
+    }
+    
+    // Show the modal
+    modal.style.display = 'block';
+}
+
+// Hide user profile modal
+function hideUserProfileModal() {
+    const modal = document.getElementById('user-modal');
+    modal.style.display = 'none';
+}
+
+// Set up event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // User profile modal
+    const closeUserModal = document.getElementById('close-user-modal');
+    const googleSignInBtn = document.getElementById('google-sign-in');
+    const signOutBtn = document.getElementById('sign-out-btn');
+    
+    if (closeUserModal) {
+        closeUserModal.addEventListener('click', hideUserProfileModal);
+    }
+    
+    if (googleSignInBtn) {
+        googleSignInBtn.addEventListener('click', signInWithGoogle);
+    }
+    
+    if (signOutBtn) {
+        signOutBtn.addEventListener('click', signOut);
+    }
+});
+
+// Custom event listeners for auth-related events
+document.addEventListener('showUserProfileModal', showUserProfileModal);
+document.addEventListener('joinEvent', function(e) {
+    joinEvent(e.detail.eventId);
+});
+document.addEventListener('leaveEvent', function(e) {
+    leaveEvent(e.detail.eventId);
+});
