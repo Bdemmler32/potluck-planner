@@ -90,7 +90,7 @@ function renderLoginView() {
             
             // Add hover effect
             signInBtn.addEventListener('mouseenter', function() {
-                this.style.backgroundColor = '#574ee6';
+                this.style.backgroundColor = '#6058e7';
                 this.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
             });
             
@@ -116,7 +116,7 @@ function renderLoginView() {
             const logo = loginContainer.querySelector('.login-logo');
             if (logo) {
                 logo.style.width = '100%';
-                logo.style.maxWidth = '400px';
+                logo.style.maxWidth = '500px';
                 logo.style.margin = '0 auto 2rem';
             }
         }
@@ -154,7 +154,7 @@ function signInWithGoogle() {
     auth.signInWithPopup(provider)
         .catch((error) => {
             console.error('Error signing in:', error);
-            alert('Failed to sign in. Please try again.');
+            alert('Whoops, Failed to sign in. Please try again.');
         });
 }
 
