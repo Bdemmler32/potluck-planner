@@ -499,11 +499,14 @@ async function deleteEvent(eventId) {
         // Remove from user's hosted events
         await database.ref(`users/${currentUser.uid}/hostedEvents/${eventId}`).remove();
         
+        // Hide the confirmation modal first
+        hideDeleteEventConfirmModal();
+        
+        // Also hide the event edit modal if it's open
+        hideEventModal();
+        
         // Go back to event list
         navigateToEventList();
-        
-        // Hide the confirmation modal
-        hideDeleteEventConfirmModal();
         
         // Show success message
         showToast('Event successfully deleted');
