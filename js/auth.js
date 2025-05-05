@@ -60,7 +60,7 @@ function renderLoginView() {
             </div>
         `;
         
-        // Style the button directly to match Google's standard sign-in button
+        // Style the button directly to match Google's standard sign-in button - Altered to match site Style
         const signInBtn = document.getElementById('login-google-btn');
         if (signInBtn) {
             // Apply Google-style button
@@ -80,7 +80,7 @@ function renderLoginView() {
             signInBtn.style.fontSize = '14px';
             signInBtn.style.cursor = 'pointer';
             
-            // Style the Google icon
+            // Style the Google icon - Altered to match site Style
             const googleIcon = signInBtn.querySelector('i');
             if (googleIcon) {
                 googleIcon.style.color = 'white';
@@ -88,7 +88,7 @@ function renderLoginView() {
                 googleIcon.style.fontSize = '18px';
             }
             
-            // Add hover effect
+            // Add hover effect - Altered to match site Style
             signInBtn.addEventListener('mouseenter', function() {
                 this.style.backgroundColor = '#6058e7';
                 this.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
@@ -115,8 +115,8 @@ function renderLoginView() {
             // Make the logo bigger
             const logo = loginContainer.querySelector('.login-logo');
             if (logo) {
-                logo.style.width = '125%';
-                logo.style.maxWidth = '500px';
+                logo.style.width = '100%';
+                logo.style.maxWidth = '400px';
                 logo.style.margin = '0 auto 2rem';
             }
         }
