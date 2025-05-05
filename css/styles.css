@@ -32,6 +32,7 @@ body {
     flex-direction: column;
 }
 
+/* Container - THE SINGLE SOURCE OF TRUTH FOR HORIZONTAL PADDING */
 .container {
     max-width: var(--content-max-width);
     margin: 0 auto;
@@ -51,11 +52,10 @@ p {
     margin-bottom: 1rem;
 }
 
-/* Header - Updated to be fixed with consistent height and alignment */
+/* Header - Updated with consistent padding */
 .app-header {
     background-color: var(--main-color);
     color: white;
-    padding: 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     width: 100%;
     margin: 0;
@@ -72,9 +72,8 @@ p {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-left: var(--gutter-xs);
-    padding-right: var(--gutter-xs);
     height: 100%;
+    /* Using --gutter-sm to match main content */
 }
 
 .logo-img {
@@ -141,20 +140,19 @@ p {
     object-fit: cover;
 }
 
-/* Main Content */
+/* Main Content - UPDATED FOR CONSISTENT SPACING */
 #main-content {
-    padding: var(--gutter-sm) var(--gutter-xs); /* Reduced top padding and aligned with cards */
+    padding-top: var(--gutter-sm); /* Vertical padding */
     min-height: calc(100vh - var(--header-height)); /* Adjusted for no footer except on login */
     flex-grow: 1; /* Allow content to grow and push footer down */
 }
 
-/* Event List */
+/* Event List - UPDATED FOR CONSISTENT SPACING */
 .events-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem; /* Reduced from 1.5rem */
-    padding: 0 var(--gutter-xs);
 }
 
 .event-list {
@@ -162,7 +160,6 @@ p {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1rem;
     margin-bottom: 2rem;
-    padding: 0 var(--gutter-xs);
 }
 
 .event-card {
@@ -233,14 +230,14 @@ p {
     background-color: white;
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin: 0 var(--gutter-xs);
+    margin-bottom: 2rem;
 }
 
 .section-title {
     margin-bottom: 1rem; /* Reduced from 1.5rem */
     font-size: 1.5rem;
     color: #1f2937;
-    padding: 0.25rem var(--gutter-xs); /* Reduced top/bottom padding */
+    padding: 0.25rem 0; /* Reduced top/bottom padding */
 }
 
 .past-events-title {
@@ -289,7 +286,7 @@ p {
     background-color: white;
     border-radius: 0.5rem;
     padding: 1rem;
-    margin: 0 var(--gutter-xs) 1rem var(--gutter-xs);
+    margin-bottom: 1rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     position: relative; /* For leave event button */
 }
@@ -337,7 +334,7 @@ p {
     border-left: 4px solid #f59e0b;
     color: #92400e;
     padding: 1rem;
-    margin: 0 var(--gutter-xs) 1rem var(--gutter-xs);
+    margin-bottom: 1rem;
     border-radius: 0.25rem;
     display: flex;
     align-items: center;
@@ -353,7 +350,7 @@ p {
     color: #065f46;
     padding: 0.75rem;
     border-radius: 0.25rem;
-    margin: 0 var(--gutter-xs) 1rem var(--gutter-xs);
+    margin-bottom: 1rem;
 }
 
 /* Filter Tabs */
@@ -363,7 +360,6 @@ p {
     align-items: center;
     gap: 0.5rem;
     margin-bottom: 1rem;
-    padding: 0 var(--gutter-xs);
 }
 
 .filter-label {
@@ -400,7 +396,6 @@ p {
 /* Item List */
 .items-container {
     margin-bottom: 1.5rem;
-    padding: 0 var(--gutter-xs);
 }
 
 /* Updated Item Card Styling - For new layout */
@@ -527,11 +522,11 @@ p {
     margin-bottom: 0.75rem;
 }
 
-/* Floating Action Buttons */
+/* Floating Action Buttons - UPDATED FOR PROPER ALIGNMENT */
 .floating-btn {
     position: fixed;
     bottom: 1.5rem;
-    right: 1.5rem;
+    right: var(--gutter-sm); /* Use consistent gutter variable */
     background-color: var(--main-color);
     color: white;
     width: auto;
@@ -545,7 +540,6 @@ p {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s;
     z-index: 10;
-    margin-right: var(--gutter-sm);
 }
 
 /* Disabled floating button for users who already RSVP'd */
@@ -1025,15 +1019,6 @@ body:not(.login-page) .app-footer {
 
 .mt-6 {
     margin-top: 1.5rem;
-}
-
-/* Full-width elements fix */
-.app-header,
-.app-footer,
-.modal {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    margin-right: calc(-50vw + 50%);
 }
 
 /* Toast Message */
