@@ -38,7 +38,7 @@ auth.onAuthStateChanged((user) => {
 });
 
 
-// Render login view if not authenticated - Fixed for proper centering and button style
+// Render login view if not authenticated - Updated with app description
 function renderLoginView() {
     const mainContent = document.getElementById('main-content');
     
@@ -57,6 +57,11 @@ function renderLoginView() {
                 <button id="login-google-btn">
                     <i class="fab fa-google"></i> Sign in with Google
                 </button>
+                
+                <!-- Added description text -->
+                <p class="login-description">
+                    Organize your event without the confusion of messy text threads. Create events, invite friends, track RSVPs, and organize who's bringing what!
+                </p>
             </div>
         `;
         
@@ -110,7 +115,8 @@ function renderLoginView() {
             loginContainer.style.flexDirection = 'column';
             loginContainer.style.justifyContent = 'center';
             loginContainer.style.alignItems = 'center';
-            loginContainer.style.minHeight = 'calc(100vh - var(--header-height) - 60px)';
+            loginContainer.style.minHeight = '60vh';
+            loginContainer.style.paddingBottom = '3rem';
             
             // Make the logo bigger
             const logo = loginContainer.querySelector('.login-logo');
@@ -118,6 +124,17 @@ function renderLoginView() {
                 logo.style.width = '100%';
                 logo.style.maxWidth = '500px';
                 logo.style.margin = '0 auto 2rem';
+            }
+            
+            // Style the description text
+            const description = loginContainer.querySelector('.login-description');
+            if (description) {
+                description.style.maxWidth = '90%';
+                description.style.margin = '2rem auto 0';
+                description.style.color = '#6b7280';
+                description.style.lineHeight = '1.5';
+                description.style.fontSize = '1rem';
+                description.style.textAlign = 'center';
             }
         }
         
