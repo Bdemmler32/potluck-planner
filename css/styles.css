@@ -894,7 +894,7 @@ input[type="checkbox"] {
     font-size: 1.25rem;
 }
 
-/* Login View - Fixed to prevent scrolling on login page */
+/* Login View - Fixed to prevent scrolling and ensure proper spacing */
 .login-page {
     height: 100vh;
     overflow: hidden;
@@ -913,23 +913,30 @@ input[type="checkbox"] {
 }
 
 .login-page #main-content {
-    height: calc(100vh - var(--header-height) - 60px); /* Account for header and footer */
+    /* Adjusted height calculation to account for footer properly */
+    height: calc(100vh - var(--header-height) - 60px);
     overflow: auto;
     padding: 0;
     display: flex;
     flex-direction: column;
+    justify-content: space-between; /* Changed to space-between for better distribution */
 }
 
 .login-container {
     max-width: 400px;
-    margin: auto;
+    margin: auto; /* This centers horizontally */
     text-align: center;
     padding: 2rem 1rem;
-    flex: 1;
+    /* Changed to use margin instead of flex for better control */
+    margin-top: auto;
+    margin-bottom: auto;
+    /* Add minimum height to prevent cramping */
+    min-height: 60vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
+    /* Add padding to create space at the bottom */
+    padding-bottom: 3rem;
 }
 
 .login-logo {
@@ -994,9 +1001,27 @@ body:not(.login-page) .app-footer {
     left: 0;
 }
 
-.app-footer .container {
-    padding-left: var(--gutter-sm);
-    padding-right: var(--gutter-sm);
+/* Responsive adjustments for login page */
+@media (max-width: 768px) {
+    .login-container {
+        /* Give more breathing room on smaller screens */
+        min-height: 50vh;
+        padding-bottom: 5rem;
+    }
+    
+    .login-logo {
+        max-width: 80%; /* Smaller on mobile */
+        margin-bottom: 3rem;
+    }
+    
+    #login-google-btn {
+        max-width: 220px;
+    }
+    
+    /* Make sure the login page footer has proper spacing */
+    .login-page #main-content {
+        padding-bottom: 70px;
+    }
 }
 
 /* Utility Classes */
