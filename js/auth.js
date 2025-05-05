@@ -90,12 +90,12 @@ function renderLoginView() {
             
             // Add hover effect
             signInBtn.addEventListener('mouseenter', function() {
-                this.style.backgroundColor = '#f8f9fa';
+                this.style.backgroundColor = '#d3d1f9';
                 this.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
             });
             
             signInBtn.addEventListener('mouseleave', function() {
-                this.style.backgroundColor = 'white';
+                this.style.backgroundColor = '#4f46e5';
                 this.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
             });
             
