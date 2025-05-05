@@ -934,7 +934,7 @@ input[type="checkbox"] {
 
 .login-logo {
     width: 100%;
-    max-width: 400px; /* Larger logo size */
+    max-width: 500px; /* Larger logo size */
     margin: 0 auto 2rem;
 }
 
