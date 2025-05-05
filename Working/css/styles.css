@@ -398,12 +398,12 @@ p {
     margin-bottom: 1.5rem;
 }
 
-/* Ad Space Styles */
+/* Ad Space Styles - UPDATED */
 .event-page-layout {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
+    gap: 1rem; /* Reduced from 1.5rem for tighter spacing */
+    margin-bottom: 1rem; /* Reduced from 1.5rem */
 }
 
 .event-details-column {
@@ -415,29 +415,31 @@ p {
     width: 300px;
 }
 
+/* Updated ad container to match event details height and remove header */
 .ad-container {
     background-color: white;
     border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
-    padding: 1rem;
+    padding: 0; /* Removed padding */
     margin-bottom: 1rem;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* Match height of details panel */
 }
 
+/* Remove ad header text */
 .ad-container h4 {
-    color: #6b7280;
-    font-size: 0.875rem;
-    margin-bottom: 0.5rem;
-    font-weight: normal;
+    display: none;
 }
 
 .ad-placeholder {
     max-width: 100%;
     height: auto;
-    margin: 0 auto;
+    display: block;
 }
 
-/* Updated RSVP Card Styles */
+/* RSVP Card Styles */
 .item-card {
     background-color: white;
     border-radius: 0.5rem;
@@ -1118,7 +1120,7 @@ input[type="checkbox"] {
     text-align: center;
 }
 
-/* Sponsor Area on Login Page */
+/* Sponsor Area on Login Page - UPDATED */
 .login-sponsor {
     margin-top: 2rem;
     text-align: center;
@@ -1134,13 +1136,18 @@ input[type="checkbox"] {
     width: 180px;
     height: 60px;
     margin: 0 auto;
-    background-color: #f3f4f6;
+    background-color: white;
     border-radius: 0.375rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
-    color: #9ca3af;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.sponsor-logo {
+    max-width: 100%;
+    max-height: 100%;
 }
 
 /* Updated Google Sign-in button to match standard Google sign-in style */
@@ -1311,12 +1318,17 @@ body:not(.login-page) .app-footer {
     /* Mobile responsive ad space */
     .ad-space-column {
         width: 100%;
-        order: 2;
+        order: 3; /* Changed to place after RSVP section */
     }
     
     .event-details-column {
         width: 100%;
         order: 1;
+    }
+    
+    /* Make items section appear before ads in mobile */
+    .items-section {
+        order: 2;
     }
     
     .sponsor-logo-container {

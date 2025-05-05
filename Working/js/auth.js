@@ -63,11 +63,11 @@ function renderLoginView() {
                     Organize your event without the confusion of messy text threads. Create events, invite friends, track RSVPs, and organize who's bringing what!
                 </p>
                 
-                <!-- Added sponsor section -->
+                <!-- Updated sponsor section with placeholder image -->
                 <div class="login-sponsor">
                     <p>Sponsored by</p>
                     <div class="sponsor-logo-container">
-                        <span>Your Logo Here</span>
+                        <img src="assets/sponsor/sponsor-placeholder.svg" alt="Sponsor" class="sponsor-logo">
                     </div>
                 </div>
             </div>

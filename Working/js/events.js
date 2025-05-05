@@ -319,7 +319,7 @@ function renderEventDetailView(event) {
     adSpaceColumn.className = 'ad-space-column';
     adSpaceColumn.innerHTML = `
         <div class="ad-container">
-            <h4>Advertisement</h4>
+            <!-- No advertisement header anymore -->
             <img src="assets/ads/ad-placeholder-300x250.svg" alt="Advertisement" class="ad-placeholder">
         </div>
     `;
@@ -369,7 +369,7 @@ function renderEventDetailView(event) {
     
     eventDetailsColumn.appendChild(detailsPanel);
     
-    // Create a new div for the items section
+    // Create a new div for the items section with a specific class for mobile ordering
     const itemsSection = document.createElement('div');
     itemsSection.className = 'items-section';
     mainContent.appendChild(itemsSection);
@@ -866,6 +866,12 @@ function generateCalendarFile(event) {
     showToast('Calendar event exported successfully!');
 }
 
+// Hide Share Modal
+function hideShareModal() {
+    const modal = document.getElementById('share-modal');
+    modal.style.display = 'none';
+}
+
 // Copy event ID to clipboard
 function copyEventId() {
     const eventId = document.getElementById('share-event-id').textContent;
@@ -927,6 +933,32 @@ function showJoinEventModal() {
 
 function hideJoinEventModal() {
     const modal = document.getElementById('join-event-modal');
+    modal.style.display = 'none';
+}
+
+// Show Delete Event Confirmation
+function showDeleteEventConfirmation(eventId) {
+    const modal = document.getElementById('confirm-delete-event-modal');
+    document.getElementById('delete-event-id-confirm').value = eventId;
+    modal.style.display = 'block';
+}
+
+// Hide Delete Event Confirmation Modal
+function hideDeleteEventConfirmModal() {
+    const modal = document.getElementById('confirm-delete-event-modal');
+    modal.style.display = 'none';
+}
+
+// Show Leave Event Confirmation
+function showLeaveEventModal(eventId) {
+    const modal = document.getElementById('leave-event-modal');
+    document.getElementById('leave-event-id').value = eventId;
+    modal.style.display = 'block';
+}
+
+// Hide Leave Event Confirmation Modal
+function hideLeaveEventModal() {
+    const modal = document.getElementById('leave-event-modal');
     modal.style.display = 'none';
 }
 
