@@ -116,7 +116,7 @@ function renderLoginView() {
             const logo = loginContainer.querySelector('.login-logo');
             if (logo) {
                 logo.style.width = '100%';
-                logo.style.maxWidth = '400px';
+                logo.style.maxWidth = '500px';
                 logo.style.margin = '0 auto 2rem';
             }
         }
