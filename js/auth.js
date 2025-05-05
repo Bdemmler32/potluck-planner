@@ -64,8 +64,8 @@ function renderLoginView() {
         const signInBtn = document.getElementById('login-google-btn');
         if (signInBtn) {
             // Apply Google-style button
-            signInBtn.style.backgroundColor = 'white';
-            signInBtn.style.color = '#757575';
+            signInBtn.style.backgroundColor = '#4f46e5';
+            signInBtn.style.color = 'white';
             signInBtn.style.border = '1px solid #dadce0';
             signInBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
             signInBtn.style.padding = '0 16px';
@@ -83,7 +83,7 @@ function renderLoginView() {
             // Style the Google icon
             const googleIcon = signInBtn.querySelector('i');
             if (googleIcon) {
-                googleIcon.style.color = '#4285F4';
+                googleIcon.style.color = 'white';
                 googleIcon.style.marginRight = '24px';
                 googleIcon.style.fontSize = '18px';
             }
